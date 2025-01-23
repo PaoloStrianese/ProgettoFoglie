@@ -8,6 +8,8 @@ disp('--- FASE Fine - ENHANCEMENT ---');
 
 disp('--- FASE Inizio - SEGMENTATION ---');
 
+segmentation()
+
 disp('--- FASE Fine - SEGMENTATION ---');
 
 disp('--- FASE Inizio - CLASSIFICAZIONE ---');

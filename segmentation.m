@@ -1,5 +1,5 @@
 close all;
-clear all;
+clear;
 
 outputFolderSegmentedLeaves = "segmented_leaves";
 outputFolderMaskedLeaves    = "masked_leaves";
@@ -9,6 +9,22 @@ datasetFolder               = "dataset";
 
 imageCount = numel(allImageNames);
 
+% Caricamento e conversione dei dati da Excel
+[rgb_leaf, rgb_bg] = load_and_convert_excel_data();
+disp('Dati RGB caricati da Excel.');
+
+% Riduzione dei dati per il training
+rgb_leaf = rgb_leaf(1:2000, :);
+rgb_bg = rgb_bg(1:2000, :);
+
+% Concateniamo i dati in un unico array per l'addestramento
+train_values = [rgb_leaf; rgb_bg];
+
+% Creiamo le etichette per il training: 1 = foglia
+train_labels = ones(size(train_values, 1), 1);
+nrs = size(rgb_leaf, 1);
+train_labels(nrs + 1:end) = 0;
+
 segmentationProgressBar = waitbar(0, 'Starting segmentation...');
 for idx=1:imageCount
     imagePath = fullfile(datasetFolder, leafFolders(idx), allImageNames(idx));
@@ -17,9 +33,7 @@ for idx=1:imageCount
 
     imageRGB = imresize(imageRGB, [512 512]);
 
-    maskedLeaf = binarize_adaptive2(imageRGB, idx, "saturation");
-
-    maskedLeaf = enhanceMask(maskedLeaf);
+    maskedLeaf = classify_knn(imageRGB, train_values, train_labels, idx);
 
     segmentedLeaf = imageRGB.*maskedLeaf;
 
@@ -43,25 +57,6 @@ function [fileNames, folders] = getNamesOfImageAndLeaf(datasetPath)
     folders   = string(f);
 end
 
-function [ch1, ch2, ch3] = getChannels(image)
-    if size(image,3) ~= 3
-        error("Input image must have 3 channels.");
-    end
-
-    ch1 = image(:,:,1);
-    ch2 = image(:,:,2);
-    ch3 = image(:,:,3);
-end
-
-function outMask=enhanceMask(mask)
-    whiteCount = nnz(mask);
-    if whiteCount > numel(mask)/2
-        mask = ~mask;
-    end
-    outMask = imclose(mask, strel('disk', 11));
-    % outMask = imopen(mask, strel('disk', 5));
-    %outMask = imfill(~outMask,"holes");
-end
 
 function saveImage(image, outputFolder, outputName)
 if ~exist(outputFolder, 'dir')
