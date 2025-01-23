@@ -15,9 +15,9 @@ for idx=1:imageCount
 
     imageRGB = im2double(imread(imagePath));
 
-    imageRGB = imresize(imageRGB, 0.3);
+    imageRGB = imresize(imageRGB, [512 512]);
 
-    maskedLeaf = binarizeImage2(imageRGB);
+    maskedLeaf = binarize_adaptive2(imageRGB, idx, "saturation");
 
     maskedLeaf = enhanceMask(maskedLeaf);
 
@@ -34,31 +34,6 @@ for idx=1:imageCount
         leafFolders(idx)));
 end
 close(segmentationProgressBar)
-
-
-function bw = binarizeImage(rgbImage)
-    imageYCbCr = rgb2ycbcr(rgbImage);
-    [~, cb, ~] = getChannels(imageYCbCr);
-    level = graythresh(cb);
-    bw    = im2bw(rgbImage, level); %#ok<IM2BW>
-end
-
-function bw = binarizeImage2(rgbImage)
-    % Converti l'immagine RGB in scala di grigi
-    grayImg = rgb2gray(rgbImage);
-    
-    % Calcola la soglia ottimale con l'algoritmo di Otsu
-    level = graythresh(grayImg); 
-    
-    % Binarizza l'immagine utilizzando la soglia di Otsu
-    bw = imbinarize(grayImg, level);
-    
-    % Crea un elemento strutturante di dimensioni 21x21
-    se = strel('square', 21);
-    
-    % Esegui l'operazione di chiusura morfologica
-    bw = imclose(bw, se);
-end
 
 
 function [fileNames, folders] = getNamesOfImageAndLeaf(datasetPath)
