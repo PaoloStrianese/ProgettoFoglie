@@ -18,7 +18,7 @@ trainFeatures = trainFeatures{:};
 testFeatures  = testFeatures{:};
 
 % model = fitcauto(train_features, train.labels,"HyperparameterOptimizationOptions", hyperparameterOptimizationOptions(MaxTime=120));
-model = fitctree(trainFeatures, train.labels);
+model = fitcknn(trainFeatures, train.labels);
 % train
 predTest = predict(model, trainFeatures);
 

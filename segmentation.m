@@ -31,9 +31,18 @@ for idx=1:imageCount
 
     imageRGB = im2double(imread(imagePath));
 
-    imageRGB = imresize(imageRGB, [512 512]);
+    imageRGB = imresize(imageRGB, [512*2 512*2]);
 
     maskedLeaf = classify_knn(imageRGB, train_values, train_labels, idx);
+
+    maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
+
+    % Prendi la regione più grossa nella maschera
+    cc = bwconncomp(maskedLeaf);
+    numPixels = cellfun(@numel, cc.PixelIdxList);
+    [~, idxMax] = max(numPixels);
+    maskedLeaf = false(size(maskedLeaf));
+    maskedLeaf(cc.PixelIdxList{idxMax}) = true;
 
     segmentedLeaf = imageRGB.*maskedLeaf;
 
@@ -51,10 +60,10 @@ close(segmentationProgressBar)
 
 
 function [fileNames, folders] = getNamesOfImageAndLeaf(datasetPath)
-    data      = struct2cell(dir(fullfile(datasetPath, "**", "*.jpg"))).';
-    fileNames = data(:,1);
-    [~, f]    = fileparts(data(:,2));
-    folders   = string(f);
+data      = struct2cell(dir(fullfile(datasetPath, "**", "*.jpg"))).';
+fileNames = data(:,1);
+[~, f]    = fileparts(data(:,2));
+folders   = string(f);
 end
 
 
