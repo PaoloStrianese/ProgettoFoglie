@@ -1,13 +1,14 @@
 clear all;
 
+addpath("bozze/");
 % Read the image
-%img = imread('dataset/Pianta 3/01.jpg');
-img = imread("composizioni/05.jpg");
+%img = imread('dataset/Pianta 10/03.jpg');
+img = imread("composizioni/02.jpg");
 
-% filteredImg = enhancement(img);
+filteredImg = enhancement(img);
 
 % Convert the image to grayscale
-filteredImg = rgb2gray(img);
+filteredImg = rgb2gray(filteredImg);
 
 % Apply a median filter
 filteredImg = medfilt2(filteredImg, [15 15]);
@@ -22,7 +23,7 @@ sChannel = hsvImg(:, :, 2);
 edges = edge(filteredImg, 'Canny');
 
 % Define the size of the region to close with a circular structuring element
-se = strel('disk', 50);
+se = strel('disk', 15);
 
 % % Apply morphological closing
 edges = imclose(edges, se);
@@ -45,6 +46,12 @@ largeComponents = ismember(labelmatrix(cc), find([stats.Area] >= minArea));
 
 % Update the edges image to only include large components
 edges = largeComponents;
+
+
+% Call the function
+extract_leaf_region(img, edges, 'leaves_segmented_composition');
+
+disp('Processing completed!');
 
 % Display the original image and the edges
 figure;
