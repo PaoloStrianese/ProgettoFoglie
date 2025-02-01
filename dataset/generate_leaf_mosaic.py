@@ -68,8 +68,8 @@ def generate_leaf_mosaic(input_folder, output_image, tile_size, grid_size):
 # Parametri
 input_folder = "C:\\Users\\Utente\\Downloads\\bg"  # Cartella con immagini trasparenti
 output_image = "C:\\Users\\Utente\\Downloads\\bg_mosaic.png"  # Percorso per salvare il mosaico
-tile_size = (30, 30)  # Dimensioni di ogni tassello (larghezza, altezza)
-grid_size = (30, 30)  # Dimensioni del mosaico (colonne, righe)
+tile_size = (15, 15)  # Dimensioni di ogni tassello (larghezza, altezza)
+grid_size = (40, 40)  # Dimensioni del mosaico (colonne, righe)
 
 # Genera il mosaico
 generate_leaf_mosaic(input_folder, output_image, tile_size, grid_size)

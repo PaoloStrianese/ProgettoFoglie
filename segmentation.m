@@ -1,5 +1,6 @@
 close all;
 clear;
+clc;
 
 outputFolderSegmentedLeaves = "segmented_leaves";
 outputFolderMaskedLeaves    = "masked_leaves";
@@ -36,13 +37,6 @@ for idx=1:imageCount
     maskedLeaf = classify_knn(imageRGB, train_values, train_labels, idx);
 
     maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
-
-    % Prendi la regione più grossa nella maschera
-    cc = bwconncomp(maskedLeaf);
-    numPixels = cellfun(@numel, cc.PixelIdxList);
-    [~, idxMax] = max(numPixels);
-    maskedLeaf = false(size(maskedLeaf));
-    maskedLeaf(cc.PixelIdxList{idxMax}) = true;
 
     segmentedLeaf = imageRGB.*maskedLeaf;
 
