@@ -15,8 +15,8 @@ imageCount = numel(allImageNames);
 disp('Dati RGB caricati da Excel.');
 
 % Riduzione dei dati per il training
-rgb_leaf = rgb_leaf(1:2000, :);
-rgb_bg = rgb_bg(1:2000, :);
+rgb_leaf = rgb_leaf(1:5000, :);
+rgb_bg = rgb_bg(1:5000, :);
 
 % Concateniamo i dati in un unico array per l'addestramento
 train_values = [rgb_leaf; rgb_bg];
@@ -32,9 +32,9 @@ for idx=1:imageCount
 
     imageRGB = im2double(imread(imagePath));
 
-    imageRGB = imresize(imageRGB, [512*2 512*2]);
+    imageRGB = imresize(imageRGB, [512 512]);
 
-    maskedLeaf = classify_knn(imageRGB, train_values, train_labels, idx);
+    maskedLeaf = segment_leaves_knn(imageRGB, train_values, train_labels, idx);
 
     maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
 
