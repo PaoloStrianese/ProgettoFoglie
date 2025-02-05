@@ -1,0 +1,118 @@
+close all;
+clear;
+clc;
+
+% Cartelle di output e input
+outputFolderSegmentedLeaves = "segmented_leaves";
+outputFolderMaskedLeaves    = "masked_leaves";
+datasetFolder               = "dataset";
+
+[allImageNames, leafFolders] = getNamesOfImageAndLeaf(datasetFolder);
+imageCount = numel(allImageNames);
+
+% Parametro per la soglia di distanza dal background
+% (ad esempio, 0.1; questo valore potrebbe richiedere messa a punto in base alle immagini)
+threshold = 0.5;
+
+segmentationProgressBar = waitbar(0, 'Starting segmentation...');
+
+for idx = 1:imageCount
+    % Costruzione del path per l'immagine corrente
+    imagePath = fullfile(datasetFolder, leafFolders(idx), allImageNames(idx));
+    imageRGB = im2double(imread(imagePath));
+    
+    % Ridimensionamento e filtro mediano (se necessario)
+    imageRGB = imresize(imageRGB, [512 512]);
+    image
+    imageRGB = apply_medfilt(imageRGB, [11 11]);  % applica filtro mediano
+    
+    % Segmentazione della foglia tramite il metodo basato sul bordo
+    maskedLeaf = segment_leaves_border(imageRGB, threshold);
+    
+    % Operazione di apertura per rimuovere piccole imperfezioni
+    maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
+    
+    % Ricostruzione dell'immagine segmentata (applicando la maschera sull'immagine originale)
+    segmentedLeaf = imageRGB .* repmat(maskedLeaf, [1 1 3]);
+    
+    % Nome del file di output
+    outName = strcat(string(idx), "-", leafFolders(idx), ".jpg");
+    
+    % Salvataggio delle immagini segmentate e delle maschere
+    saveImage(segmentedLeaf, outputFolderSegmentedLeaves, outName);
+    saveImage(maskedLeaf, outputFolderMaskedLeaves, outName);
+    
+    waitbar(idx/imageCount, segmentationProgressBar, ...
+        sprintf('Progress: %d %%\n Current folder: %s', floor(idx/imageCount*100), leafFolders(idx)));
+end
+close(segmentationProgressBar)
+
+
+%% Funzione per ottenere i nomi delle immagini e dei rispettivi folder
+function [fileNames, folders] = getNamesOfImageAndLeaf(datasetPath)
+    data      = struct2cell(dir(fullfile(datasetPath, "**", "*.jpg"))).';
+    fileNames = data(:,1);
+    [~, f]    = fileparts(data(:,2));
+    folders   = string(f);
+end
+
+%% Funzione per salvare un'immagine nella cartella di output
+function saveImage(image, outputFolder, outputName)
+    if ~exist(outputFolder, 'dir')
+        mkdir(outputFolder);
+    end
+    outputPath = fullfile(outputFolder, outputName);
+    imwrite(image, outputPath);
+end
+
+%% Funzione per applicare il filtro mediano su immagini RGB o in scala di grigi
+function outImage = apply_medfilt(image, filterSize)
+    % Ridimensionamento e applicazione del filtro mediano:
+    % Se l'immagine è RGB, applichiamo il filtro a ciascun canale separatamente.
+    if size(image,3) == 3
+        outImage = image;
+        for c = 1:3
+            outImage(:,:,c) = medfilt2(image(:,:,c), filterSize);
+        end
+    else
+        outImage = medfilt2(image, filterSize);
+    end
+end
+
+%% Funzione per segmentare la foglia basata sul bordo con convoluzione locale
+function maskedLeaf = segment_leaves_border(imageRGB, threshold)
+    % Parametri per il bordo e per la convoluzione
+    borderWidth = 15;          % larghezza del bordo per il calcolo del background
+    convKernelSize = 5;        % dimensione della finestra per la convoluzione
+    
+    [m, n, ~] = size(imageRGB);
+    
+    % Creazione di una maschera booleana per i pixel del bordo
+    border_mask = false(m, n);
+    border_mask(1:borderWidth, :) = true;
+    border_mask(end-borderWidth+1:end, :) = true;
+    border_mask(:, 1:borderWidth) = true;
+    border_mask(:, end-borderWidth+1:end) = true;
+    
+    % Calcolo della media per ciascun canale utilizzando i pixel del bordo
+    tempR = imageRGB(:,:,1);
+    bgR = mean(tempR(border_mask));
+    
+    tempG = imageRGB(:,:,2);
+    bgG = mean(tempG(border_mask));
+    
+    tempB = imageRGB(:,:,3);
+    bgB = mean(tempB(border_mask));
+    
+    % Calcolo della distanza Euclidea di ogni pixel dal colore medio dello sfondo
+    diff = sqrt( (imageRGB(:,:,1) - bgR).^2 + (imageRGB(:,:,2) - bgG).^2 + (imageRGB(:,:,3) - bgB).^2 );
+    
+    % Applichiamo una convoluzione con un filtro di media per "ammorbidire" la differenza attorno al pixel
+    h = fspecial('average', [convKernelSize convKernelSize]);
+    diff_conv = imfilter(diff, h, 'replicate');
+    
+    % Generazione della maschera:
+    % I pixel con differenza mediata superiore alla soglia sono considerati appartenenti alla foglia
+    maskedLeaf = diff_conv > threshold;
+end
+
