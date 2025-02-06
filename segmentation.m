@@ -23,8 +23,8 @@ for idx = 1:imageCount
     
     % Ridimensionamento e enhancement dell'immagine
     imageRGB = imresize(imageRGB, [1024 1024]);
-    imageRGB = enhancement(imageRGB);
-    saveImage(imageRGB, "enhanced", outName);
+    %imageRGB = enhancement(imageRGB);
+    %saveImage(imageRGB, "enhanced", outName);
 
     % Conversione in scala di grigi
     imageGray = rgb2gray(imageRGB);
