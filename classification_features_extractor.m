@@ -83,7 +83,7 @@ for i = 1:numel(combinedFeaturesContainers)
 end
 
 % qua sarebbe meglio fare il kfold per la cross validation nel training visto la poca quantità di foglie
-CV = cvpartition(labels, "HoldOut", 0.15);
+CV = cvpartition(labels, "HoldOut", 0.1);
 
 train = struct();
 test = struct();

@@ -1,4 +1,4 @@
-function [mask_predicted] = classify_knn(imageRGB, train_values, train_labels, imgID)
+function [mask_predicted] = classify_knn(imageRGB, model, imgID)
     % Funzione per classificare un'immagine di foglie utilizzando un classificatore KNN
     % Input:
     %   imageRGB - immagine in formato RGB da classificare
@@ -6,14 +6,6 @@ function [mask_predicted] = classify_knn(imageRGB, train_values, train_labels, i
     %   train_labels - etichette per i dati di training (1=foglia, 0=sfondo)
     % Output:
     %   mask_predicted - maschera binaria della classificazione (1=foglia, 0=sfondo)
-    
-    % Verifica degli input
-    if nargin < 3
-        error('Sono richiesti 3 input: imageRGB, train_values, train_labels.');
-    end
-    
-    classifier_knn = fitcknn(train_values, train_labels, 'NumNeighbors', 11);
-    disp('Fine Addestramento classificatore KNN.');
     
     % Riorganizzazione dell'immagine di test
     [ir, ic, ich] = size(imageRGB);
@@ -24,7 +16,7 @@ function [mask_predicted] = classify_knn(imageRGB, train_values, train_labels, i
     disp('Immagine di test riorganizzata.');
     
     % Classificazione dei dati di test con il classificatore
-    test_predicted = predict(classifier_knn, test_values);
+    test_predicted = predict(model, test_values);
     disp('Classificazione completata.');
     
     % Ristrutturazione del vettore delle etichette in una maschera immagine

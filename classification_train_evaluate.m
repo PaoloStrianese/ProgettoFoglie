@@ -18,7 +18,7 @@ trainFeatures = trainFeatures{:};
 testFeatures  = testFeatures{:};
 
 % model = fitcauto(train_features, train.labels,"HyperparameterOptimizationOptions", hyperparameterOptimizationOptions(MaxTime=120));
-model = fitcknn(trainFeatures, train.labels);
+model = TreeBagger(200, trainFeatures, train.labels);
 % train
 predTest = predict(model, trainFeatures);
 

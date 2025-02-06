@@ -14,8 +14,8 @@ imageCount = numel(allImageNames);
 disp('Dati RGB caricati da Excel.');
 
 % Riduzione dei dati per il training
-rgb_leaf = rgb_leaf(1:2000, :);
-rgb_bg = rgb_bg(1:2000, :);
+rgb_leaf = rgb_leaf(:, :);
+rgb_bg = rgb_bg(:, :);
 
 % Concateniamo i dati in un unico array per l'addestramento
 train_values = [rgb_leaf; rgb_bg];
@@ -25,6 +25,19 @@ train_labels = ones(size(train_values, 1), 1);
 nrs = size(rgb_leaf, 1);
 train_labels(nrs + 1:end) = 0;
 
+modelFileName = 'knn_classifier_model.mat';
+if exist(modelFileName, 'file')
+    % Load existing model
+    load(modelFileName, 'classifier_knn');
+    disp('Loaded existing KNN classifier.');
+else
+    % Train and save new model
+    classifier_knn = fitcknn(train_values, train_labels, 'NumNeighbors', 11);
+    save(modelFileName, 'classifier_knn');
+    disp('Trained and saved new KNN classifier.');
+end
+
+
 segmentationProgressBar = waitbar(0, 'Starting segmentation...');
 for idx=1:imageCount
     imagePath = fullfile(datasetFolder, leafFolders(idx), allImageNames(idx));
@@ -33,7 +46,7 @@ for idx=1:imageCount
 
     imageRGB = imresize(imageRGB, [512*2 512*2]);
 
-    maskedLeaf = classify_knn(imageRGB, train_values, train_labels, idx);
+    maskedLeaf = classify_knn(imageRGB, classifier_knn, idx);
 
     maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
 
