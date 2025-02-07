@@ -70,25 +70,6 @@ for idx=1:imageCount
     imagePath = fullfile(datasetFolder, leafFolders(idx), allImageNames(idx));
 
     imageRGB = im2double(imread(imagePath));
-    hsvI = rgb2hsv(imageRGB);
-    H = hsvI(:,:,1);
-    S = hsvI(:,:,2);
-    V = hsvI(:,:,3);
-
-    % Stima dell'illuminazione di fondo usando un filtro gaussiano
-    % Il parametro sigma determina la scala della stima: valori più alti catturano variazioni a bassa frequenza.
-    sigma = 15;
-    background = imgaussfilt(V, sigma);
-
-    % Correggi il canale di luminosità dividendo per la stima dell'illuminazione
-    V_corrected = V ./ (background + eps);  % aggiungiamo eps per evitare divisioni per zero
-
-    % Normalizza il canale corretto in modo che i valori siano compresi tra 0 e 1
-    V_corrected = mat2gray(V_corrected);
-
-    % Ricombina i canali HSV con il canale V corretto
-    hsvI_corrected = cat(3, H, S, V_corrected);
-    imageRGB = hsv2rgb(hsvI_corrected);
 
     imageRGB = imresize(imageRGB, [512*2 512*2]);
 
