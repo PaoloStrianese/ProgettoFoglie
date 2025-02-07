@@ -12,7 +12,20 @@ function [mask_predicted] = classify_knn(imageRGB, model, imgID)
     if ich ~= 3
         error('L''immagine deve essere in formato RGB (3 canali).');
     end
-    test_values = reshape(im2double(imageRGB), ir * ic, ich);
+    % Convert the image to double precision
+    rgbImage = im2double(imageRGB);
+    
+    % Extract RGB features
+    rgb_features = reshape(rgbImage, ir * ic, ich);
+    
+    % Convert to HSV and extract features
+    hsv_features = reshape(rgb2hsv(rgbImage), ir * ic, 3);
+    
+    % Convert to LAB and extract features
+    lab_features = reshape(rgb2lab(rgbImage), ir * ic, 3);
+    
+    % Combine all features into one matrix
+    test_values = [rgb_features, hsv_features, lab_features];
     disp('Immagine di test riorganizzata.');
     
     % Classificazione dei dati di test con il classificatore

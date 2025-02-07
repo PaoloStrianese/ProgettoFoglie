@@ -1,4 +1,2 @@
-segmented_leaves/
-masked_leaves/
-*.mat
 .DS_store
+.cache/

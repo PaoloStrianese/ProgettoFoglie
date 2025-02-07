@@ -1,10 +1,11 @@
 close all;
 clear all;
 
+cacheFolder = "cache";
 featuresExtractorFolder = "feature_extractors";
-segmentedImagesFolder   = "segmented_leaves";
-maskImagesFolder        = "masked_leaves";
-outputTrainTestFileName = "train-test.mat";
+segmentedImagesFolder   = fullfile(cacheFolder,"segmented_leaves");
+maskImagesFolder        = fullfile(cacheFolder,"masked_leaves");
+outputTrainTestFileName = fullfile(cacheFolder,"train-test.mat");
 
 addpath("utils", genpath(featuresExtractorFolder));
 

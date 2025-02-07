@@ -3,7 +3,7 @@ clear all;
 
 addpath('utils');
 
-load('train-test.mat');
+load(fullfile('cache','train-test.mat'));
 
 numFeatures = numel(featuresNames);
 
