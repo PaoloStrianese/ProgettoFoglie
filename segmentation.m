@@ -1,7 +1,7 @@
 close all;
 clear all;
 
-cacheFolder = "cache";
+cacheFolder = ".cache";
 outputFolderSegmentedLeaves = fullfile(cacheFolder, "segmented_leaves");
 outputFolderMaskedLeaves    = fullfile(cacheFolder, "masked_leaves");
 datasetFolder               = "dataset";

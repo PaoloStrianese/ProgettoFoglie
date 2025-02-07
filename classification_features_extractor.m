@@ -1,7 +1,7 @@
 close all;
 clear all;
 
-cacheFolder = "cache";
+cacheFolder = ".cache";
 featuresExtractorFolder = "feature_extractors";
 segmentedImagesFolder   = fullfile(cacheFolder,"segmented_leaves");
 maskImagesFolder        = fullfile(cacheFolder,"masked_leaves");
