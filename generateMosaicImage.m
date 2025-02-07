@@ -1,7 +1,8 @@
 function [mosaicLeaf, mosaicBackground]=generateMosaicImage(mosaicLeafName, mosaicBackgroundName, datasetFolder, groundtruthFolder, cacheFolder)
 %% Parametri generali
 patchSize = 20;         % dimensione del patch (20x20 pixel)
-numRows = 5;           % numero di righe della griglia
+patchSizeBG = 40;       % dimensione del patch per il background
+numRows = 10;           % numero di righe della griglia
 numCols = 10;           % numero di colonne della griglia
 maxPatches = numRows * numCols;  % numero massimo di patch (100)
 
@@ -12,8 +13,15 @@ imagesFolder = fullfile(cacheFolder,'images');
 mosaicLeafName= fullfile(cacheFolder,mosaicLeafName);
 mosaicBGName= fullfile(cacheFolder, mosaicBackgroundName);
 
-transferFiles(datasetFolder, imagesFolder);
-transferFiles(groundtruthFolder, masksFolder);
+
+if ~exist(imagesFolder, 'dir')
+    transferFiles(datasetFolder, imagesFolder);
+end
+if ~exist(masksFolder, 'dir')
+    transferFiles(groundtruthFolder, masksFolder);
+end
+
+
 
 % Leggi la lista delle maschere (si assume formato PNG) e ordinale
 maskFiles = dir(fullfile(masksFolder, '*.png'));
@@ -143,27 +151,28 @@ for k = 1:length(maskFiles)
             % Scegli casualmente uno dei 4 bordi:
             % 1 = bordo superiore, 2 = bordo inferiore, 3 = bordo sinistro, 4 = bordo destro
             borderChoice = randi(4);
+
             switch borderChoice
                 case 1  % Bordo superiore
                     rowStartBG = 1;
-                    rowEndBG   = patchSize;
-                    colStartBG = randi(imgW_orig - patchSize + 1);
-                    colEndBG   = colStartBG + patchSize - 1;
+                    rowEndBG   = patchSizeBG;
+                    colStartBG = randi(imgW_orig - patchSizeBG + 1);
+                    colEndBG   = colStartBG + patchSizeBG - 1;
                 case 2  % Bordo inferiore
                     rowEndBG   = imgH_orig;
-                    rowStartBG = imgH_orig - patchSize + 1;
-                    colStartBG = randi(imgW_orig - patchSize + 1);
-                    colEndBG   = colStartBG + patchSize - 1;
+                    rowStartBG = imgH_orig - patchSizeBG + 1;
+                    colStartBG = randi(imgW_orig - patchSizeBG + 1);
+                    colEndBG   = colStartBG + patchSizeBG - 1;
                 case 3  % Bordo sinistro
                     colStartBG = 1;
-                    colEndBG   = patchSize;
-                    rowStartBG = randi(imgH_orig - patchSize + 1);
-                    rowEndBG   = rowStartBG + patchSize - 1;
+                    colEndBG   = patchSizeBG;
+                    rowStartBG = randi(imgH_orig - patchSizeBG + 1);
+                    rowEndBG   = rowStartBG + patchSizeBG - 1;
                 case 4  % Bordo destro
                     colEndBG   = imgW_orig;
-                    colStartBG = imgW_orig - patchSize + 1;
-                    rowStartBG = randi(imgH_orig - patchSize + 1);
-                    rowEndBG   = rowStartBG + patchSize - 1;
+                    colStartBG = imgW_orig - patchSizeBG + 1;
+                    rowStartBG = randi(imgH_orig - patchSizeBG + 1);
+                    rowEndBG   = rowStartBG + patchSizeBG - 1;
             end
 
             % Estrai il patch BG dall'immagine originale
@@ -172,19 +181,19 @@ for k = 1:length(maskFiles)
             % Inizializza la griglia per il mosaico BG alla prima patch valida
             if ~mosaicBGInitialized
                 if nChannels == 3
-                    mosaicBackground = zeros(numRows*patchSize, numCols*patchSize, 3, class(patchBG));
+                    mosaicBackground = zeros(numRows*patchSizeBG, numCols*patchSizeBG, 3, class(patchBG));
                 else
-                    mosaicBackground = zeros(numRows*patchSize, numCols*patchSize, class(patchBG));
+                    mosaicBackground = zeros(numRows*patchSizeBG, numCols*patchSizeBG, class(patchBG));
                 end
                 mosaicBGInitialized = true;
             end
             % Calcola la posizione del patch nella griglia BG
             rowIdxBG = floor((patchCountBG - 1) / numCols) + 1;
             colIdxBG = mod((patchCountBG - 1), numCols) + 1;
-            mosaicRowStartBG = (rowIdxBG - 1) * patchSize + 1;
-            mosaicRowEndBG   = rowIdxBG * patchSize;
-            mosaicColStartBG = (colIdxBG - 1) * patchSize + 1;
-            mosaicColEndBG   = colIdxBG * patchSize;
+            mosaicRowStartBG = (rowIdxBG - 1) * patchSizeBG + 1;
+            mosaicRowEndBG   = rowIdxBG * patchSizeBG;
+            mosaicColStartBG = (colIdxBG - 1) * patchSizeBG + 1;
+            mosaicColEndBG   = colIdxBG * patchSizeBG;
             mosaicBackground(mosaicRowStartBG:mosaicRowEndBG, mosaicColStartBG:mosaicColEndBG, :) = patchBG;
         end
         % Elimina la variabile imgOriginal per evitare di riutilizzarla
