@@ -1,6 +1,6 @@
 function mask = createEdgeMask(imgrgb, id)
 % createEdgeMask restituisce una maschera binaria ottenuta dalla somma
-% dei filtri Roberts, Sobel e Prewitt, con operazioni di closing, 
+% dei filtri Roberts, Sobel, Prewitt e Canny, con operazioni di closing, 
 % riempimento dei buchi e rimozione delle aree minori di 1000 pixel.
 %
 % INPUT:
@@ -8,6 +8,9 @@ function mask = createEdgeMask(imgrgb, id)
 %
 % OUTPUT:
 %   mask - maschera binaria in cui i bordi sono evidenziati (1)
+
+    imgrgb = enhancement(imgrgb);
+    saveImage(imgrgb, "enhanced", id);
 
     % Se l'immagine è a colori, convertila in scala di grigi
     if size(imgrgb, 3) == 3
@@ -23,17 +26,26 @@ function mask = createEdgeMask(imgrgb, id)
     edge_sobel   = edge(img_gray, 'Sobel');
     edge_prewitt = edge(img_gray, 'Prewitt');
     edge_roberts = edge(img_gray, 'Roberts');
+    edge_canny = edge(img_gray, 'Canny', [0.05 0.15]);
 
-    % Somma pixel-per-pixel i risultati dei tre filtri 
+
+    saveImage(edge_canny, "canny", id);
+
+    % Somma pixel-per-pixel i risultati dei quattro filtri 
     % (conversione in double per sommare immagini binarie)
-    edge_sum = double(edge_roberts) + double(edge_sobel) + double(edge_prewitt);
+    edge_sum = double(edge_roberts) + double(edge_sobel) + double(edge_prewitt) + double(edge_canny);
+
+    saveImage(edge_sum, "mask-pre", id)
 
     % Applica un'operazione di closing per connettere i bordi spezzati
-    se = strel('disk', 21);
+    se = strel('disk', 25);
     edge_sum = imclose(edge_sum, se);
 
     % Riempi eventuali buchi nella maschera
     edge_sum = imfill(edge_sum, 'holes');
+
+    se = strel('disk', 7);
+    edge_sum = imerode(edge_sum, se);
 
     % Binarizza: ogni pixel > 0 diventa 1 (bordo rilevato)
     mask = edge_sum > 0;
@@ -41,5 +53,5 @@ function mask = createEdgeMask(imgrgb, id)
     saveImage(mask, "masks", id);
     
     % Rimuove le aree con meno di 1000 pixel
-    mask = bwareaopen(mask, 5000);
+    mask = bwareaopen(mask, 20000);
 end

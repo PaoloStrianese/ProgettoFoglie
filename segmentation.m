@@ -1,5 +1,6 @@
 close all;
 clear;
+clc;
 
 outputFolderSegmentedLeaves = "segmented_leaves";
 outputFolderMaskedLeaves    = "masked_leaves";
@@ -16,10 +17,7 @@ for idx=1:imageCount
 
     imageRGB = im2double(imread(imagePath));
 
-    imageRGB = imresize(imageRGB, [1024 1024]);
-    
-    imageRGB = enhancement(imageRGB);
-    saveImage(imageRGB, "enhanced", outName);
+    imageRGB = imresize(imageRGB, [2048 2048]);
 
     maskedLeaf = createEdgeMask(imageRGB, outName);
 
