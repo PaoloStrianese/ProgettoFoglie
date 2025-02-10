@@ -1,8 +1,8 @@
 function [mosaicLeaf, mosaicBackground]=generateMosaicImage(mosaicLeafName, mosaicBackgroundName, datasetFolder, groundtruthFolder, cacheFolder)
 %% Parametri generali
-patchSize = 20;         % dimensione del patch (20x20 pixel)
-patchSizeBG = 40;       % dimensione del patch per il background
-numRows = 10;           % numero di righe della griglia
+patchSize = 10;         % dimensione del patch (20x20 pixel)
+patchSizeBG = 50;       % dimensione del patch per il background
+numRows = 8;           % numero di righe della griglia
 numCols = 10;           % numero di colonne della griglia
 maxPatches = numRows * numCols;  % numero massimo di patch (100)
 
@@ -214,4 +214,24 @@ if mosaicBGInitialized
     fprintf('Mosaico BACKGROUND salvato in "mosaic_background.png"\n');
 else
     warning('Nessun patch BACKGROUND valido estratto.');
+end
+
+
+info = imfinfo(imagePath);
+imgOriginal = imread(imagePath);
+
+% Correggi l'orientamento se necessario (sia per leaf che per background)
+if isfield(info, 'Orientation')
+    switch info.Orientation
+        case 1
+            % Nessuna operazione
+        case 3
+            imgOriginal = imrotate(imgOriginal, 180);
+        case 6
+            imgOriginal = imrotate(imgOriginal, -90);
+        case 8
+            imgOriginal = imrotate(imgOriginal, 90);
+        otherwise
+            warning('Orientamento non gestito: %d', info.Orientation);
+    end
 end

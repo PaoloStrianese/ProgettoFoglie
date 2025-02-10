@@ -41,9 +41,9 @@ def process_images_in_folder(api_key, input_folder, output_folder):
 
 
 # metti nella lista il numero della cartella pianta che vuoi processare
-for i in [1, 7, 8, 9, 10]:
+for i in [11]:
     # withoutbg.com con free hai 50 richieste e basta ho usato tempmail per fare nuovi account e ti da nuova API key
-    api_key = "key-Y0V6gYGazymvcLAB"
+    api_key = "key-8hifmSUDwRbOas1M"
     input_folder = os.path.join("dataset", f"Pianta {i}")
     output_folder = os.path.join("gt",f"Pianta {i}")
     process_images_in_folder(api_key, input_folder, output_folder)
