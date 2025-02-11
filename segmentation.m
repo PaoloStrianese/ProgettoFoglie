@@ -41,29 +41,23 @@ else
         leaf_img = im2double(leaf_img);
         bg_img   = im2double(bg_img);
 
+        [ir, ic, ich] = size(leaf_img);
+        leaf_img = reshape(leaf_img, ir * ic, ich);
+        [ir, ic, ich] = size(bg_img);
+        bg_img = reshape(bg_img, ir * ic, ich);
+
         disp('Extracting features for training...');
-        % Estrazione dei dati RGB da ogni pixel
-        rgb_leaf = reshape(leaf_img, [], 3);
-        rgb_bg   = reshape(bg_img, [], 3);
 
-        % Convert to HSV
-        hsv_leaf = rgb2hsv(rgb_leaf);
-        hsv_bg   = rgb2hsv(rgb_bg);
+        leaf_values = extractFeaturesLocalizer(leaf_img);
+        bg_values = extractFeaturesLocalizer(bg_img);
 
-        % Convert to Lab
-        lab_leaf = rgb2lab(rgb_leaf);
-        lab_bg   = rgb2lab(rgb_bg);
-
-        % Concateniamo i dati in un unico array per l'addestramento
-        train_values = [rgb_leaf, hsv_leaf, lab_leaf,;
-            rgb_bg, hsv_bg, lab_bg, ];
-
+        train_values = [leaf_values; bg_values];
         % Normalize training values to the range [0, 1]
         train_values = normalize(train_values, 'range');
 
         % Creiamo le etichette per il training: 1 = foglia
         train_labels = ones(size(train_values, 1), 1);
-        nrs = size(train_labels, 1);
+        nrs = size(leaf_values, 1);
         train_labels(nrs + 1:end) = 0;
 
         % Train and save new model
@@ -85,9 +79,11 @@ for idx=1:imageCount
 
     imageRGB = im2double(imread(imagePath));
 
+    imageRGB = correggiBilanciamentoBianco(imageRGB);
+
     imageRGB = imresize(imageRGB, [256 256]);
 
-    maskedLeaf = classify_knn(imageRGB, localizerModel, idx);
+    maskedLeaf = predictMask(imageRGB, localizerModel, idx);
 
     maskedLeaf = imopen(maskedLeaf, strel('disk', 11));
 
@@ -100,7 +96,13 @@ for idx=1:imageCount
 
     segmentedLeaf = imageRGB.*maskedLeaf;
 
-    outName = strcat(string(idx), "-", leafFolders(idx), ".jpg");
+    value = mod(idx,10) + 1;
+    if value < 10
+        imageName = sprintf('0%d', value);
+    else
+        imageName = sprintf('%d', value);
+    end
+    outName = strcat(leafFolders(idx), "-","0",imageName , ".png");
 
     saveImage(segmentedLeaf, outputFolderSegmentedLeaves, outName);
     saveImage(maskedLeaf, outputFolderMaskedLeaves, outName);

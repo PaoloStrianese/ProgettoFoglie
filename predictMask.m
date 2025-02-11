@@ -1,4 +1,4 @@
-function [mask_predicted] = classify_knn(imageRGB, model, imgID)
+function [mask_predicted] = predictMask(imageRGB, model, imgID)
 % Funzione per classificare un'immagine di foglie utilizzando un classificatore KNN
 % Input:
 %   imageRGB - immagine in formato RGB da classificare

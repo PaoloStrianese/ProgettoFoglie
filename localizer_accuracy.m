@@ -1,6 +1,6 @@
 % Cartelle contenenti le maschere e la ground truth
 maskDir = fullfile('.cache','segmented_leaves');
-gtDir   = fullfile('.cache,''gt');
+gtDir   = fullfile('.cache','gt');
 
 % Ottieni la lista di file .png nella cartella delle maschere
 maskFiles = dir(fullfile(maskDir, '*.png'));
@@ -48,7 +48,11 @@ for i = 1:numImages
     if size(gtMask,3) > 1
         gtMask = rgb2gray(gtMask);
     end
-
+    % Verifica che le dimensioni siano uguali, altrimenti ridimensiona predMask
+    if ~isequal(size(predMask), size(gtMask))
+        warning('Dimensioni differenti tra predMask e gtMask per %s. Ridimensiono predMask.', maskName);
+        predMask = imresize(predMask, size(gtMask));
+    end
     % Converte le immagini in binario (se non lo sono già)
     % Si utilizza imbinarize che effettua una sogliatura automatica
     if ~islogical(predMask)
@@ -57,6 +61,7 @@ for i = 1:numImages
     if ~islogical(gtMask)
         gtMask = imbinarize(gtMask);
     end
+
 
     % Calcola i valori della matrice di confusione pixel-per-pixel
     % TP: pixel dove sia la maschera predetta che la GT sono 1

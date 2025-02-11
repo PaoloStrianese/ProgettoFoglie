@@ -100,6 +100,7 @@ for k = 1:length(maskFiles)
                         warning('Orientamento non gestito: %d', info.Orientation);
                 end
             end
+            imgOriginal = correggiBilanciamentoBianco(imgOriginal);
 
             % Per la parte LEAF si ridimensiona l'immagine in modo che le dimensioni
             % corrispondano a quelle della maschera
