@@ -7,9 +7,9 @@ addpath('utils');
 
 
 segmentedImagesFolderTraining = "gt_segmented";
-segmentedImagesFolderTesting  = "gt_segmented";
+segmentedImagesFolderTesting  = "comp_seg";
 maskImagesFolderTraining      = "gt";
-maskImagesFolderTesting       = "gt";
+maskImagesFolderTesting       = "comp";
 
 if ~isfolder(fullfile(cacheFolder, segmentedImagesFolderTraining))
     transferFiles(segmentedImagesFolderTraining, fullfile(cacheFolder, segmentedImagesFolderTraining));
@@ -36,16 +36,17 @@ maskImagesFolderTesting       = fullfile(cacheFolder, maskImagesFolderTesting);
 %% Extract features
 [trainFeatures, trainLabels, featuresNames] = featureExtractorClassifier(...
     segmentedImagesFolderTraining,...
-    maskImagesFolderTraining...
-    );
+    maskImagesFolderTraining,...
+    1);
 
 [testFeatures, testLabels, ~] = featureExtractorClassifier(...
     segmentedImagesFolderTesting,...
-    maskImagesFolderTesting...
-    );
+    maskImagesFolderTesting,...
+    1);
 
 train = cell2struct(trainFeatures, cellstr(featuresNames), 2);
 test  = cell2struct(testFeatures,  cellstr(featuresNames), 2);
+
 
 train.labels = trainLabels;
 test.labels  = testLabels;
@@ -54,19 +55,18 @@ save(outputTrainTestFileName, "train", "test", "featuresNames");
 
 numFeatures = numel(featuresNames);
 
-%combination of features and test performance
-trainFeatures = cell(numFeatures);
-testFeatures  = cell(numFeatures);
-for i=1:numFeatures
-    trainFeatures{i} = train.(featuresNames(i));
-    testFeatures{i}  = test.(featuresNames(i));
+
+trainFeatures = cell(1, numFeatures);
+testFeatures  = cell(1, numFeatures);
+for i = 1:numFeatures
+    trainFeatures{i} = train.(featuresNames{i});
+    testFeatures{i}  = test.(featuresNames{i});
 end
 
-trainFeatures = trainFeatures{:};
-testFeatures  = testFeatures{:};
+trainFeatures = [trainFeatures{:}];
+testFeatures  = [testFeatures{:}];
 
 model = TreeBagger(200, trainFeatures, train.labels);
-
 
 predTest = predict(model, trainFeatures);
 

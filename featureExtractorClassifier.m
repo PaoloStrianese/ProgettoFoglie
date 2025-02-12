@@ -31,8 +31,11 @@ for i = 1:imagesCount
     segmentedImage = im2double(imread(segmentedPaths(i)));
     segmentedImage = imresize(segmentedImage, resizeFactor);
 
+
     for j = 1:numel(segmentedFunctions)
         segmentedFeatures{j}(i, :) = segmentedFunctions{j}(segmentedImage);
+        %disp (segmentedFunctions{j});
+        %disp(segmentedFeatures{j});
     end
 
     % Extract mask features
@@ -41,11 +44,17 @@ for i = 1:imagesCount
 
     for j = 1:numel(maskFunctions)
         maskFeatures{j}(i, :) = maskFunctions{j}(maskImage);
+        %disp(maskFunctions{j});
+        %disp(maskFeatures{j});
     end
 end
 close(featureExtractionProgressBar);
 
 combinedFeaturesContainers = [segmentedFeatures, maskFeatures];
+% for i = 1:numel(combinedFeaturesContainers)
+%     disp(combinedFeaturesContainers{i});
+% end
+
 
 %% Normalize features
 for i = 1:numel(combinedFeaturesContainers)

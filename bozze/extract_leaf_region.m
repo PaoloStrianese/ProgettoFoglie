@@ -1,6 +1,6 @@
 function extract_leaf_region(img, mask, compName)
-outputFolderSegm = 'leaves_segmented_composition';
-outputFolderMask = 'leaves_masked_composition';
+outputFolderSegm = '1gt_segmented';
+outputFolderMask = '1gt';
 
 img = correctOrientation(img);
 mask = correctOrientation(mask);
@@ -19,15 +19,9 @@ mask = imbinarize(mask);
 if ~exist(outputFolderSegm, 'dir')
     mkdir(outputFolderSegm);
 end
-if ~exist(fullfile(outputFolderSegm, compName), 'dir')
-    mkdir(fullfile(outputFolderSegm, compName));
-end
 
 if ~exist(outputFolderMask, 'dir')
     mkdir(outputFolderMask);
-end
-if ~exist(fullfile(outputFolderMask, compName), 'dir')
-    mkdir(fullfile(outputFolderMask, compName));
 end
 
 labeledImage = bwlabel(mask);
@@ -77,10 +71,10 @@ for k = 1:numel(stats)
     % Mask the original image with the resized binary mask
     maskedOriginal = leafOriginal .* uint8(resizedBinary);
 
-    baseName = sprintf('%04d', k);
+    baseName = sprintf('%02d', k);
     % Save the masked image
-    imwrite(maskedOriginal, fullfile(outputFolderSegm, compName, [baseName '.png']));
+    imwrite(maskedOriginal, fullfile(outputFolderSegm, [compName]));
     % Save the binary mask image
-    imwrite(leafBinary, fullfile(outputFolderMask, compName, [baseName '.png']));
+    imwrite(leafBinary, fullfile(outputFolderMask, [compName]));
 end
 end
