@@ -7,7 +7,7 @@ addpath('utils');
 
 
 segmentedImagesFolderTraining = "gt_segmented";
-segmentedImagesFolderTesting  = "comp_seg";
+segmentedImagesFolderTesting  = "comp_segm";
 maskImagesFolderTraining      = "gt";
 maskImagesFolderTesting       = "comp";
 
@@ -37,12 +37,12 @@ maskImagesFolderTesting       = fullfile(cacheFolder, maskImagesFolderTesting);
 [trainFeatures, trainLabels, featuresNames] = featureExtractorClassifier(...
     segmentedImagesFolderTraining,...
     maskImagesFolderTraining,...
-    1);
+    0.2);
 
 [testFeatures, testLabels, ~] = featureExtractorClassifier(...
     segmentedImagesFolderTesting,...
     maskImagesFolderTesting,...
-    1);
+    0.4);
 
 train = cell2struct(trainFeatures, cellstr(featuresNames), 2);
 test  = cell2struct(testFeatures,  cellstr(featuresNames), 2);
@@ -66,7 +66,7 @@ end
 trainFeatures = [trainFeatures{:}];
 testFeatures  = [testFeatures{:}];
 
-model = TreeBagger(200, trainFeatures, train.labels);
+model = TreeBagger(50, trainFeatures, train.labels);
 
 predTest = predict(model, trainFeatures);
 
@@ -83,3 +83,4 @@ showConfmat(cmTest.cm_raw, cmTest.labels);
 
 fprintf('Train Acc: %f\n', cmTrain.accuracy);
 fprintf('Test Acc: %f\n', cmTest.accuracy);
+

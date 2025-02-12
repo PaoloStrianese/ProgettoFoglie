@@ -17,6 +17,8 @@ maskPaths      = getImagePathsFromFolder(maskImagesFolder);
 labels         = getLabelsFromFolder(segmentedImagesFolder);
 imagesCount    = numel(labels);
 
+assert(imagesCount == numel(maskPaths), "Number of segmented and mask images must be equal");
+assert(imagesCount == numel(segmentedPaths), "Number of images and labels must be equal");
 
 [segmentedFunctions, maskFunctions, segmentedFeatures, maskFeatures, featuresNames] = setupExtractionClassifier(imagesCount);
 
