@@ -2,6 +2,9 @@ function extract_leaf_region(img, mask, compName)
 outputFolderSegm = 'leaves_segmented_composition';
 outputFolderMask = 'leaves_masked_composition';
 
+img = correctOrientation(img);
+mask = correctOrientation(mask);
+
 % Ensure the output folders exist, create subfolders if needed
 if ~exist(outputFolderSegm, 'dir')
     mkdir(outputFolderSegm);
@@ -9,6 +12,7 @@ end
 if ~exist(fullfile(outputFolderSegm, compName), 'dir')
     mkdir(fullfile(outputFolderSegm, compName));
 end
+
 
 if ~exist(outputFolderMask, 'dir')
     mkdir(outputFolderMask);
@@ -26,7 +30,7 @@ for k = 1:numel(stats)
     if stats(k).Area < 100
         continue;
     end
-    
+
     % Get binary leaf image and bounding box
     leafBinary = stats(k).Image;
     bb = stats(k).BoundingBox;
@@ -34,15 +38,8 @@ for k = 1:numel(stats)
     % Crop corresponding region from original image
     leafOriginal = imcrop(img, bb);
 
-    % Calculate rotation angle to make major axis vertical
-    rotationAngle = 90 - stats(k).Orientation;
-
-    % Rotate both images
-    rotatedBinary = imrotate(leafBinary, rotationAngle, 'nearest', 'loose');
-    rotatedOriginal = imrotate(leafOriginal, rotationAngle, 'bilinear', 'loose');
-
     % Resize the rotated binary mask to match the size of the rotated original image
-    resizedBinary = imresize(rotatedBinary, size(rotatedOriginal(:,:,1)));
+    resizedBinary = imresize(leafBinary, size(leafOriginal(:,:,1)));
 
     % Mask the rotated original image with the resized binary mask
     maskedOriginal = rotatedOriginal .* uint8(resizedBinary);
