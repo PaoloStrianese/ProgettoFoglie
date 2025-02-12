@@ -17,7 +17,7 @@ for idx=1:imageCount
 
     imageRGB = im2double(imread(imagePath));
 
-    imageRGB = imresize(imageRGB, [2048 2048]);
+    imageRGB = imresize(imageRGB, [1024 1024]);
 
     maskedLeaf = createEdgeMask(imageRGB, outName);
 

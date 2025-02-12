@@ -1,0 +1,34 @@
+function [imgEnhanced, maskGreen] = enhancement(imgRGB)
+    % Converte l'immagine da RGB a LAB per migliorare la luminosità e il contrasto
+    labImage = rgb2lab(imgRGB);
+    
+    % Estrae il canale di luminanza (L)
+    L = labImage(:,:,1);
+    % Normalizza L in [0,1] (in Lab i valori L sono [0, 100])
+    L_norm = L / 100;
+    
+    % Applica l'equalizzazione adattiva dell'istogramma (CLAHE) per migliorare il contrasto locale
+    L_eq = adapthisteq(L_smooth, 'NumTiles', [8 8], 'ClipLimit', 0.01);
+    
+    % Riporta il canale L equalizzato alla scala originale [0,100]
+    labImage(:,:,1) = L_eq * 100;
+    
+    % Converte nuovamente l'immagine da LAB a RGB
+    imgEnhanced = lab2rgb(labImage);
+    
+    %% Segmentazione delle aree verdi con l'indice Excess Green (ExG)
+    % Converti l'immagine in double per i calcoli
+    imgRGB_double = im2double(imgRGB);
+    R = imgRGB_double(:,:,1);
+    G = imgRGB_double(:,:,2);
+    B = imgRGB_double(:,:,3);
+    
+    % Calcola l'indice Excess Green
+    ExG = 2 * G - R - B;
+    % Normalizza l'indice in [0,1]
+    ExG_norm = mat2gray(ExG);
+    
+    % Applica una soglia per creare una maschera delle aree verdi
+    % (la soglia può essere regolata in base alle specifiche condizioni dell'immagine)
+    maskGreen = ExG_norm > 0.3;  
+end

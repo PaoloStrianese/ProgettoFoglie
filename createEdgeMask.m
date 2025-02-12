@@ -19,15 +19,13 @@ function mask = createEdgeMask(imgrgb, id)
         img_gray = imgrgb;
     end
 
-    % Applica un filtro mediano per ridurre il rumore (kernel 9x9)
-    %img_gray = medfilt2(img_gray, [9, 9]);
+    saveImage(img_gray, "gray", id);
 
     % Calcola i bordi con i filtri:
     edge_sobel   = edge(img_gray, 'Sobel');
     edge_prewitt = edge(img_gray, 'Prewitt');
     edge_roberts = edge(img_gray, 'Roberts');
-    edge_canny = edge(img_gray, 'Canny', [0.05 0.15]);
-
+    edge_canny = edge(img_gray, 'Canny', [0.08 0.15]);  % Applica Canny
 
     saveImage(edge_canny, "canny", id);
 
@@ -38,13 +36,13 @@ function mask = createEdgeMask(imgrgb, id)
     saveImage(edge_sum, "mask-pre", id)
 
     % Applica un'operazione di closing per connettere i bordi spezzati
-    se = strel('disk', 25);
+    se = strel('disk', 15);
     edge_sum = imclose(edge_sum, se);
 
     % Riempi eventuali buchi nella maschera
     edge_sum = imfill(edge_sum, 'holes');
 
-    se = strel('disk', 7);
+    se = strel('disk', 3);
     edge_sum = imerode(edge_sum, se);
 
     % Binarizza: ogni pixel > 0 diventa 1 (bordo rilevato)
@@ -53,5 +51,5 @@ function mask = createEdgeMask(imgrgb, id)
     saveImage(mask, "masks", id);
     
     % Rimuove le aree con meno di 1000 pixel
-    mask = bwareaopen(mask, 20000);
+    mask = bwareaopen(mask, 5000);
 end
