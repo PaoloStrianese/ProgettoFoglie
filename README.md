@@ -30,6 +30,7 @@ modelli provati:
 - Random Forest
 
 ## training con tutti i pixel di sfondo e pixel di foglie di tutte le 100 immagini (pixel-based)
+eseguito preprocessing per bilanciare il bianco e evitare errori in base alla diversa illuminazione
 si sono presi tutti i pixel estraendo i vari canali e etichettandoli in base a se sono bg o foglia
 
 lista canali colore provati in diverse combinazioni:
