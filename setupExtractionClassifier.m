@@ -8,6 +8,7 @@ addpath(genpath(featuresExtractorFolder));
 
 % color, hu, length, width 0.541
 % color, hu, length, width, ExG 0.633
+% color, hu, length, width, ExG, ExGR 0.691667
 
 % Segmented feature extractors
 segmentedFunctions = { ...
