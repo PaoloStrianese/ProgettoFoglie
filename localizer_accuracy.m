@@ -1,5 +1,5 @@
 % Cartelle contenenti le maschere e la ground truth
-maskDir = fullfile('.cache','segmented_leaves');
+maskDir = fullfile('.cache','gt');
 gtDir   = fullfile('.cache','gt');
 
 % Ottieni la lista di file .png nella cartella delle maschere
