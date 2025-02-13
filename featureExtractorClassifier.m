@@ -30,7 +30,7 @@ for i = 1:imagesCount
         sprintf("Progress: %d %%\n%s", floor(i/imagesCount*100), labels(i)));
 
     % Extract segmented features
-    segmentedImage = im2double(imread(segmentedPaths(i)));
+    segmentedImage = im2double(imread(segmentedPaths{i}));
     segmentedImage = imresize(segmentedImage, resizeFactor);
 
 
@@ -41,7 +41,7 @@ for i = 1:imagesCount
     end
 
     % Extract mask features
-    maskImage = im2double(imread(maskPaths(i)));
+    maskImage = im2double(imread(maskPaths{i}));
     maskImage = imresize(maskImage, resizeFactor);
 
     for j = 1:numel(maskFunctions)
