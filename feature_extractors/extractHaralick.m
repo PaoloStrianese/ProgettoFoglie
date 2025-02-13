@@ -1,4 +1,5 @@
-function features = extractHaralick(img)
+function [features] = extractHaralick(img)
+
 % Converti in scala di grigi se necessario
 if size(img,3) == 3
     img = rgb2gray(img);

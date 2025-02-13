@@ -8,6 +8,9 @@ addpath('utils');
 showBestFeatures = true;
 showPrediction = true;
 reExtractFeatures = true;
+reTrainClassificator = true;
+
+precisionClassifier = false;
 
 segmentedImagesFolderTraining = "gt_segmented";
 segmentedImagesFolderTesting  = "comp_segm";
@@ -25,6 +28,7 @@ end
 if ~isfolder(fullfile(cacheFolder, maskImagesFolderTraining))
     transferFiles(maskImagesFolderTraining, fullfile(cacheFolder, maskImagesFolderTraining));
 end
+
 
 if ~isfolder(fullfile(cacheFolder, maskImagesFolderTesting))
     transferFiles(maskImagesFolderTesting, fullfile(cacheFolder, maskImagesFolderTesting));
@@ -47,7 +51,7 @@ if ~exist(outputTrainTestFileName) || reExtractFeatures
     [testFeatures, testLabels, ~] = featureExtractorClassifier(...
         segmentedImagesFolderTesting,...
         maskImagesFolderTesting,...
-        0.7);
+        0.8);
 
     train = cell2struct(trainFeatures, cellstr(featuresNames), 2);
     test  = cell2struct(testFeatures,  cellstr(featuresNames), 2);
@@ -76,17 +80,22 @@ trainFeatures = [trainFeatures{:}];
 testFeatures  = [testFeatures{:}];
 
 
+if reTrainClassificator
 
-if showBestFeatures
-    model = TreeBagger(1200, trainFeatures, train.labels, 'OOBPrediction', 'on', 'OOBPredictorImportance', 'on','MinLeafSize', 1,'NumPrint',200);
+    if ~precisionClassifier
+        model = TreeBagger(1200, trainFeatures, train.labels, 'OOBPrediction', 'on', 'OOBPredictorImportance', 'on','MinLeafSize', 1,'NumPrint',200);
+    else
+        % trova lui iparametri ottimali classificatore
+        t = templateTree('Reproducible',true);
+        model = fitcensemble(trainFeatures, train.labels,'OptimizeHyperparameters','auto','Learners',t,...
+            'Learners', t);
+    end
+    save(fullfile(cacheFolder,"model.mat"), "model");
 else
-    % trova lui iparametri ottimali classificatore
-    t = templateTree('Reproducible',true);
-    model = fitcensemble(trainFeatures, train.labels,'OptimizeHyperparameters','auto','Learners',t,...
-        'Learners', t);
+    load(fullfile(cacheFolder,"model.mat"));
 end
 
-save(fullfile(cacheFolder,"model.mat"), "model");
+
 
 if showBestFeatures
     [~, ~, segmentedFeatures, maskFeatures, featureNames] = setupExtractionClassifier(1);
@@ -122,7 +131,7 @@ if showPrediction
     % cmTrain = confmat(train.labels(:),predTest(:));
     % figure("Name","Train");
     % showConfmat(cmTrain.cm_raw, cmTrain.labels);
-
+    %fprintf('Train Acc: %f\n', cmTrain.accuracy);
 
     % test
     predTest = predict(model, testFeatures);
@@ -131,6 +140,6 @@ if showPrediction
     figure("Name", "Test");
     showConfmat(cmTest.cm_raw, cmTest.labels);
 
-    fprintf('Train Acc: %f\n', cmTrain.accuracy);
+
     fprintf('Test Acc: %f\n', cmTest.accuracy);
 end
