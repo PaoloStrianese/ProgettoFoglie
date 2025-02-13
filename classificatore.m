@@ -1,5 +1,6 @@
 close all;
 clear all;
+clc;
 
 cacheFolder = ".cache";
 outputTrainTestFileName = fullfile(cacheFolder,"train-test.mat");
