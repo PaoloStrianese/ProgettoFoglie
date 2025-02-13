@@ -20,11 +20,7 @@ end
 
 imageCount = numel(allImageNames);
 
-if exist(modelFileName, 'file')
-    % Load existing model
-    load(modelFileName, 'localizerModel');
-    disp('Loaded existing localizer.');
-else
+if ~exist(modelFileName, 'file')
     if (TRAIN_WITHOUT_MOSAIC == true)
         disp('Training without mosaic images but with the whole dataset.');
         trainLocalizer(cacheFolder, datasetFolder, groundTruthFolder, allImageNames, leafFolders, imageCount);
@@ -66,6 +62,10 @@ else
         disp('Trained and saved new localizer model.');
     end
 end
+
+% Load existing model
+load(modelFileName, 'localizerModel');
+disp('Loaded existing localizer.');
 
 
 segmentationProgressBar = waitbar(0, 'Starting segmentation...');
