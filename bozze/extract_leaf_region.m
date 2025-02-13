@@ -1,6 +1,6 @@
 function extract_leaf_region(img, mask, compName)
-outputFolderSegm = '1gt_segmented';
-outputFolderMask = '1gt';
+outputFolderSegm = fullfile('.cache','1gt_segmented');
+outputFolderMask = fullfiel('.cache','1gt');
 
 img = correctOrientation(img);
 mask = correctOrientation(mask);

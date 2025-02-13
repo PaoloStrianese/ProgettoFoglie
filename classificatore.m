@@ -12,10 +12,10 @@ reTrainClassificator = true;
 
 precisionClassifier = false;
 
-segmentedImagesFolderTraining = "gt_segmented";
-segmentedImagesFolderTesting  = "comp_segm";
-maskImagesFolderTraining      = "gt";
-maskImagesFolderTesting       = "comp";
+segmentedImagesFolderTraining = "gt_segmentate_dataset_nuovo_croppate";
+segmentedImagesFolderTesting  = "gt_segmentate_composizioni";
+maskImagesFolderTraining      = "gt_maschere_dataset_nuovo_croppate";
+maskImagesFolderTesting       = "gt_maschere_composizioni";
 
 if ~isfolder(fullfile(cacheFolder, segmentedImagesFolderTraining))
     transferFiles(segmentedImagesFolderTraining, fullfile(cacheFolder, segmentedImagesFolderTraining));
@@ -51,7 +51,7 @@ if ~exist(outputTrainTestFileName) || reExtractFeatures
     [testFeatures, testLabels, ~] = featureExtractorClassifier(...
         segmentedImagesFolderTesting,...
         maskImagesFolderTesting,...
-        0.8);
+        0.2);
 
     train = cell2struct(trainFeatures, cellstr(featuresNames), 2);
     test  = cell2struct(testFeatures,  cellstr(featuresNames), 2);
