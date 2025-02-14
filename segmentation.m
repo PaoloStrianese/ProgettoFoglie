@@ -4,7 +4,7 @@ clc;
 
 outputFolderSegmentedLeaves = "segmented_leaves";
 outputFolderMaskedLeaves    = "masked_leaves";
-datasetFolder               = "dataset";
+datasetFolder               = "composizioni";
 
 [allImageNames, leafFolders] = getNamesOfImageAndLeaf(datasetFolder);
 
@@ -17,7 +17,7 @@ for idx=1:imageCount
 
     imageRGB = im2double(imread(imagePath));
 
-    imageRGB = imresize(imageRGB, [1024 1024]);
+    imageRGB = imresize(imageRGB, 0.6);
 
     maskedLeaf = createEdgeMask(imageRGB, outName);
 

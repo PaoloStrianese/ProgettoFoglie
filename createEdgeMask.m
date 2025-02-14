@@ -10,7 +10,8 @@ function mask = createEdgeMask(imgrgb, id)
 %   mask - maschera binaria in cui i bordi sono evidenziati (1)
 
     imgrgb = enhancement(imgrgb);
-    saveImage(imgrgb, "enhanced", id);
+    saveImage(imgrgb, "enhanced", id)
+
 
     % Se l'immagine è a colori, convertila in scala di grigi
     if size(imgrgb, 3) == 3
@@ -19,19 +20,24 @@ function mask = createEdgeMask(imgrgb, id)
         img_gray = imgrgb;
     end
 
+    img_gray = medfilt2(img_gray, [5,5]);
+
     saveImage(img_gray, "gray", id);
 
     % Calcola i bordi con i filtri:
     edge_sobel   = edge(img_gray, 'Sobel');
-    edge_prewitt = edge(img_gray, 'Prewitt');
-    edge_roberts = edge(img_gray, 'Roberts');
+    %saveImage(edge_sobel, "sobel", id);
+    %edge_prewitt = edge(img_gray, 'Prewitt');
+    %saveImage(edge_prewitt, "prewit", id);
+    %edge_roberts = edge(img_gray, 'Roberts');
+    %saveImage(edge_roberts, "robert", id);
     edge_canny = edge(img_gray, 'Canny', [0.08 0.15]);  % Applica Canny
 
     saveImage(edge_canny, "canny", id);
 
     % Somma pixel-per-pixel i risultati dei quattro filtri 
     % (conversione in double per sommare immagini binarie)
-    edge_sum = double(edge_roberts) + double(edge_sobel) + double(edge_prewitt) + double(edge_canny);
+    edge_sum = double(edge_sobel) + double(edge_canny);
 
     saveImage(edge_sum, "mask-pre", id)
 
