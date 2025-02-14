@@ -18,9 +18,9 @@ addpath(genpath(featuresExtractorFolder));
 segmentedFunctions = { ...
     @extractCIVE,... %0.30 migliora la pianta 2
     @extractColor,... %0.425
-    %@extractExG,... %0.34
-    %@extractExGR,... %0.34
-    %@extractHaralick,... %0.20
+    @extractExG,... %0.34
+    @extractExGR,... %0.34
+    @extractHaralick,... %0.20
     %@extractWavelet,... %0,24
     %@extractHOG,... %0.15
     %@extractVenation,... %0.13
@@ -42,9 +42,9 @@ maskFunctions = { ...
     @extractHuMoments,... %0.54
     @extractContourFourier,... %0.53
     @extractEccentricity,... %0.47
+    @extractAspectRatio,.... %0.4
     %@extractPhysiologicalLength,... %0.3
     %@extractPhysiologicalWidth,... %0.3
-    %@extractAspectRatio,.... %0.4
     % @extractCentroidCoordinates,... %0.09
     %@extractNarrowFactor,... %0.18
     % @extractArea,... %0.11
@@ -55,9 +55,9 @@ maskFunctions = { ...
 %% Define feature sizes for preallocation
 segmentedFeaturesSizes = configureDictionary("string","uint8");
 segmentedFeaturesSizes("Color") = 33;
-%segmentedFeaturesSizes("Haralick") = 4;
-%segmentedFeaturesSizes("ExG") = 8;
-%segmentedFeaturesSizes("ExGR") = 8;
+segmentedFeaturesSizes("Haralick") = 4;
+segmentedFeaturesSizes("ExG") = 8;
+segmentedFeaturesSizes("ExGR") = 8;
 %segmentedFeaturesSizes("HOG") = 36;
 %segmentedFeaturesSizes("TamuraTexture") = 3;
 %segmentedFeaturesSizes("ColorCorrelogram") = 6;
@@ -80,7 +80,7 @@ maskFeaturesSizes('Edge') = 16;
 maskFeaturesSizes('ContourFourier') = 10;
 %maskFeaturesSizes('FractalDimension') = 1;
 maskFeaturesSizes('Eccentricity') = 1;
-%maskFeaturesSizes('AspectRatio') = 1;
+maskFeaturesSizes('AspectRatio') = 1;
 % maskFeaturesSizes('Area') = 1;
 % smaskFeaturesSizes('NarrowFactor') = 1;
 %maskFeaturesSizes('CentroidCoordinates') = 2;

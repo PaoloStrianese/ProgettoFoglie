@@ -13,6 +13,12 @@ reTrainClassificator = true;
 
 precisionClassifier = false;
 
+RESIZE_FACTOR_SEGMENTATE_TRAIN = 1;
+RESIZE_FACTOR_MASK_TRAIN = 1;
+
+RESIZE_FACTOR_SEGMENTATE_TEST = 1;
+RESIZE_FACTOR_MASK_TEST = 1;
+
 segmentedImagesFolderTraining = "gt_segmentate_dataset_nuovo_croppate";
 segmentedImagesFolderTesting  = "gt_segmentate_composizioni";
 maskImagesFolderTraining      = "gt_maschere_dataset_nuovo_croppate";
@@ -47,12 +53,14 @@ if ~exist(outputTrainTestFileName) || reExtractFeatures
     [trainFeatures, trainLabels, featuresNames] = featureExtractorClassifier(...
         segmentedImagesFolderTraining,...
         maskImagesFolderTraining,...
-        0.2);
+        RESIZE_FACTOR_SEGMENTATE_TRAIN,...
+        RESIZE_FACTOR_MASK_TRAIN);
 
     [testFeatures, testLabels, ~] = featureExtractorClassifier(...
         segmentedImagesFolderTesting,...
         maskImagesFolderTesting,...
-        0.2);
+        RESIZE_FACTOR_SEGMENTATE_TEST,...
+        RESIZE_FACTOR_MASK_TEST);
 
     train = cell2struct(trainFeatures, cellstr(featuresNames), 2);
     test  = cell2struct(testFeatures,  cellstr(featuresNames), 2);

@@ -1,13 +1,16 @@
-
 function [combinedFeaturesContainers, labels, featuresNames] = featureExtractorClassifier(...
-    segmentedImagesFolder,...
-    maskImagesFolder, varargin)
-
+    segmentedImagesFolder, maskImagesFolder, varargin)
 
 if nargin < 3 || isempty(varargin{1})
-    resizeFactor = 0.1;
+    segmentedResizeFactor = 0.1;
 else
-    resizeFactor = varargin{1};
+    segmentedResizeFactor = varargin{1};
+end
+
+if nargin < 4 || isempty(varargin{2})
+    maskResizeFactor = 0.1;
+else
+    maskResizeFactor = varargin{2};
 end
 
 addpath("utils");
@@ -31,32 +34,23 @@ for i = 1:imagesCount
 
     % Extract segmented features
     segmentedImage = im2double(imread(segmentedPaths{i}));
-    segmentedImage = imresize(segmentedImage, resizeFactor);
-
+    segmentedImage = imresize(segmentedImage, segmentedResizeFactor);
 
     for j = 1:numel(segmentedFunctions)
         segmentedFeatures{j}(i, :) = segmentedFunctions{j}(segmentedImage);
-        %disp (segmentedFunctions{j});
-        %disp(segmentedFeatures{j});
     end
 
     % Extract mask features
     maskImage = im2double(imread(maskPaths{i}));
-    maskImage = imresize(maskImage, resizeFactor);
+    maskImage = imresize(maskImage, maskResizeFactor);
 
     for j = 1:numel(maskFunctions)
         maskFeatures{j}(i, :) = maskFunctions{j}(maskImage);
-        %disp(maskFunctions{j});
-        %disp(maskFeatures{j});
     end
 end
 close(featureExtractionProgressBar);
 
 combinedFeaturesContainers = [segmentedFeatures, maskFeatures];
-% for i = 1:numel(combinedFeaturesContainers)
-%     disp(combinedFeaturesContainers{i});
-% end
-
 
 %% Normalize features
 for i = 1:numel(combinedFeaturesContainers)
