@@ -20,6 +20,7 @@ test_values = extractFeaturesLocalizer(imageRGB);
 
 % Normalizzazione dei dati di test
 test_values = normalize(test_values, 'range');
+disp('Normalizzazione completata.');
 
 % Classificazione dei dati di test con il classificatore
 test_predicted = predict(model, test_values);
@@ -35,8 +36,8 @@ mask_predicted = reshape(pred_numeric, ir, ic);
 mask_predicted = logical(mask_predicted);
 
 % Post-elaborazione della maschera con chiusura morfologica
-se = strel('disk', 7);
-mask_predicted = imclose(mask_predicted, se);
+% se = strel('disk', 7);
+% mask_predicted = imclose(mask_predicted, se);
 disp('Post-elaborazione completata.');
 fprintf('----------- FINE IMG %d -----------\n', imgID);
 

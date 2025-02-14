@@ -29,7 +29,7 @@ end
 if nargin < 2
     % Definisce una regione che occupa il 10% dell'immagine in alto a sinistra
     [nr, nc, ~] = size(I);
-    rect = [1, 1, floor(nr*0.1), floor(nc*0.1)];
+    rect = [1, 1, floor(nr*0.02), floor(nc*0.1)];
 end
 
 % Estrazione della regione di riferimento

@@ -1,6 +1,6 @@
 % Cartelle contenenti le maschere e la ground truth
-maskDir = fullfile('.cache','gt');
-gtDir   = fullfile('.cache','gt');
+maskDir = fullfile('.cache','canny_comp');
+gtDir   = fullfile('.cache','gt_comp');
 
 % Ottieni la lista di file .png nella cartella delle maschere
 maskFiles = dir(fullfile(maskDir, '*.png'));
@@ -38,8 +38,9 @@ for i = 1:numImages
     end
 
     % Carica le immagini
-    predMask = imread(predPath);
-    gtMask   = imread(gtPath);
+    predMask = correctOrientation(predPath);
+    gtMask   = correctOrientation(gtPath);
+
 
     % Se le immagini sono a colori, convertile in scala di grigi
     if size(predMask,3) > 1

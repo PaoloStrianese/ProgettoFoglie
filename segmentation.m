@@ -1,7 +1,7 @@
 close all;
 clear all;
 
-TRAIN_WITHOUT_MOSAIC = true;
+TRAIN_WITHOUT_MOSAIC = false;
 
 cacheFolder = ".cache";
 outputFolderSegmentedLeaves = fullfile(cacheFolder, "segmented_leaves");
@@ -16,9 +16,11 @@ if ~exist(cacheFolder, 'dir')
     mkdir(cacheFolder);
 end
 
+
 [allImageNames, leafFolders] = getNamesOfImageAndLeaf(datasetFolder);
 
 imageCount = numel(allImageNames);
+
 
 if ~exist(modelFileName, 'file')
     if (TRAIN_WITHOUT_MOSAIC == true)
@@ -57,15 +59,19 @@ if ~exist(modelFileName, 'file')
         train_labels(nrs + 1:end) = 0;
 
         % Train and save new model
-        localizerModel = TreeBagger(100, train_values, train_labels, 'Method', 'classification');
+        localizerModel = TreeBagger(1000, train_values, train_labels, 'Method', 'classification');
         save(modelFileName, 'localizerModel');
         disp('Trained and saved new localizer model.');
     end
 end
 
+return;
+
 % Load existing model
 load(modelFileName, 'localizerModel');
 disp('Loaded existing localizer.');
+
+
 
 
 segmentationProgressBar = waitbar(0, 'Starting segmentation...');
