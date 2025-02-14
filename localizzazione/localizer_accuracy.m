@@ -41,11 +41,11 @@ for i = 1:numImages
     predMask = correctOrientation(predPath);
     gtMask   = correctOrientation(gtPath);
 
-    if i == 8
-        imshow(predMask);
-        imshow(gtmask);
-        return;
+    if ~isequal(size(predMask), size(gtMask));
+        gtMask = imresize(gtMask, size(predMask));
     end
+
+
     % Se le immagini sono a colori, convertile in scala di grigi
     if size(predMask,3) > 1
         predMask = rgb2gray(predMask);

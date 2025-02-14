@@ -15,7 +15,7 @@ if ~exist(outFolder, 'dir')
 end
 
 foo = "features.mat";
-modelName = "model.mat";
+modelName = "modelClassifier.mat";
 outputTrainTestFileName = fullfile(outFolder, foo);
 
 RESIZE_FACTOR_SEGMENTATE_TRAIN = 0.2;
@@ -23,7 +23,6 @@ RESIZE_FACTOR_MASK_TRAIN = 0.2;
 
 RESIZE_FACTOR_SEGMENTATE_TEST = 0.7;
 RESIZE_FACTOR_MASK_TEST = 0.7;
-
 
 
 % Estrai le feature e le etichette per il set di training
@@ -61,12 +60,10 @@ trainFeatures = [trainFeatures{:}];
 testFeatures  = [testFeatures{:}];
 
 
-if ~exist(fullfile(outFolder, modelName), 'file')
-    model = TreeBagger(1200, trainFeatures, train.labels, 'OOBPrediction', 'on', 'OOBPredictorImportance', 'on','MinLeafSize', 1,'NumPrint',200);
-    save(fullfile(outFolder,modelName), "model");
-else
-    load(fullfile(outFolder, modelName));
-end
+
+model = TreeBagger(1200, trainFeatures, train.labels, 'OOBPrediction', 'on', 'OOBPredictorImportance', 'on','MinLeafSize', 1,'NumPrint',200);
+save(fullfile(outFolder,modelName), "model");
+
 
 % train
 predTest = predict(model, trainFeatures);
@@ -74,7 +71,8 @@ cmTrain = confmat(train.labels(:),predTest(:));
 fprintf('Train Acc: %f\n', cmTrain.accuracy);
 
 % test
-predTest = predict(model, testFeatures);
+% score =riga la foglia e la colonna la probalilita ad appartenere ad un pianta
+[predTest, score] = predict(model, testFeatures);
 
 cmTest = confmat(test.labels(:),predTest(:));
 figure("Name", "Test");
@@ -82,3 +80,31 @@ showConfmat(cmTest.cm_raw, cmTest.labels);
 
 
 fprintf('Test Acc: %f\n', cmTest.accuracy);
+
+
+threshold = 0.30;
+correctHighScore = 0;
+totalHighScore = 0;
+
+for i = 1:size(score,1)
+    % Trova l'indice della classe predetta nella lista di classi del modello
+    predLabel = predTest{i};
+    idx = find(strcmp(model.ClassNames, predLabel));
+    % Ottieni il punteggio corrispondente
+    predScore = score(i, idx);
+
+    if predScore > threshold
+        totalHighScore = totalHighScore + 1;
+        % Confronta l'etichetta predetta con quella vera
+        if strcmp(test.labels{i}, predLabel)
+            correctHighScore = correctHighScore + 1;
+        end
+    end
+end
+
+if totalHighScore > 0
+    perc = (correctHighScore / totalHighScore) * 100;
+else
+    perc = 0;
+end
+fprintf('Percentuale di predizioni giuste con score superiore a 0.30: %.2f%%\n', perc);

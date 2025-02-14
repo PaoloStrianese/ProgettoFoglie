@@ -22,8 +22,11 @@ test_values = extractFeaturesLocalizer(imageRGB);
 test_values = normalize(test_values, 'range');
 
 % Classificazione dei dati di test con il classificatore
-test_predicted = predict(model, test_values);
-disp('Classificazione completata.');
+[test_predicted, score] = predict(model, test_values);
+
+
+idx = max(score, [], 2) < 0.65;
+test_predicted(idx) = {'0'};
 
 % Convert predicted labels (cell array of strings) to numeric values
 pred_numeric = cellfun(@str2double, test_predicted);
@@ -31,9 +34,6 @@ pred_numeric = cellfun(@str2double, test_predicted);
 % Ristrutturazione del vettore delle etichette in una maschera immagine
 mask_predicted = reshape(pred_numeric, ir, ic);
 
-
 mask_predicted = logical(mask_predicted);
-
-fprintf('----------- FINE IMG %d -----------\n', imgID);
 
 end

@@ -28,13 +28,11 @@ train_values = [leaf_values; bg_values];
 % Normalize training values to the range [0, 1]
 train_values = normalize(train_values, 'range');
 
-% Create labels for training: 1 = leaf
-train_labels = ones(size(leaf_values, 1), 1);
-train_labels = [train_labels; zeros(size(bg_values, 1), 1)]; % 0 = background
-
 disp('Starting training...');
 % Train and save new model
 localizerModel = TreeBagger(500, train_values, train_labels, 'Method', 'classification', 'NumPrint', 50);
 save(modelFileName, 'localizerModel', '-v7.3');
 disp('Trained and saved new localizer model.');
 end
+
+

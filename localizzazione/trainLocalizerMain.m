@@ -9,11 +9,13 @@ outFolder = "out";
 datasetFolder = fullfile('dataset','foglie_singole');
 groundTruthFolder = fullfile('dataset','gt_foglie_singole');
 
+if ~exist(outFolder, 'dir')
+    mkdir(outFolder);
+end
 
 [allImageNames, leafFolders] = getNamesOfImageAndLeaf(datasetFolder);
 
 imageCount = numel(allImageNames);
-
 
 
 if (TRAIN_WITHOUT_MOSAIC == true) && (TRAIN_WITH_MOSAIC == false)

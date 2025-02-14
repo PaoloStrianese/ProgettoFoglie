@@ -1,5 +1,5 @@
 
-load(fullfile('outfolder', 'model.mat'));
+load(fullfile('out', 'model.mat'));
 
 
 plotBestFeatures(model);

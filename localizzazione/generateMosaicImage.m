@@ -14,6 +14,10 @@ imagesFolder = fullfile(cacheFolder,'images');
 mosaicLeafName= fullfile(outFolder,mosaicLeafName);
 mosaicBGName= fullfile(outFolder, mosaicBackgroundName);
 
+
+if ~exist(outFolder, 'dir')
+    mkdir(outFolder);
+end
 % Initialize mosaicLeaf and mosaicBackground to empty arrays
 mosaicLeaf = [];
 mosaicBackground = [];

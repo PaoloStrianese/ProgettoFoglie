@@ -23,17 +23,22 @@ for idx=1:imageCount
 
     imagePath = fullfile(composizioniFolder, allImageNames{idx});
 
-    imageRGB = im2double(imread(imagePath));
+    imageRGB = im2double(correctOrientation(imagePath));
+    original = imageRGB;
 
-    imageRGB = imresize(imageRGB, 0.1);
+    imageRGB = imresize(imageRGB, 0.15, "bilinear", "Antialiasing", true);
 
     maskedLeaf = predictMask(imageRGB, localizerModel, idx);
 
-    % maskedLeaf = imopen(maskedLeaf, strel('disk', 11));
 
+    maskedLeaf = imresize(maskedLeaf, [size(original,1) size(original,2)], "bilinear","Antialiasing",true);
 
-    segmentedLeaf = imageRGB.*maskedLeaf;
+    maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
+    maskedLeaf = imclose(maskedLeaf, strel('disk', 5));
+    maskedLeaf = imfill(maskedLeaf, 'holes');
+    maskedLeaf = imerode(maskedLeaf, strel('disk', 3));
 
+    segmentedLeaf = original.*maskedLeaf;
 
     outName = strcat(string(idx), ".png");
 
