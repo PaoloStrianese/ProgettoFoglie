@@ -4,27 +4,30 @@ clear all;
 load(fullfile('src','pretrained model','modelClassifier.mat'));
 load(fullfile('src','pretrained model','modelLocalizer.mat'));
 
-composizione = fullfile('src','dataset','compositions','11.jpg');
+composizione = fullfile('src','dataset','compositions','22.jpg');
 
 singleLeavesMaskPath = fullfile('.cache','main_segmented');
 singleLeavesSegmentedPath = fullfile('.cache','main_mask');
 
 addpath(genpath(fullfile('src')));
 
-imageRGB = correctOrientation(composizione);
+imageRGB = im2double(correctOrientation(composizione));
 original = imageRGB;
+
 
 % Resize for processing (optional)
 imageRGB = imresize(imageRGB, 0.6, "bilinear", "Antialiasing", true);
-imageRGBKNN = imresize(imageRGB, 0.1, "bilinear", "Antialiasing", true);
+imageRGBLoc = imresize(imageRGB, 0.1, "bilinear", "Antialiasing", true);
 
 %% Mask obtained with Canny
 disp("Generating Canny Mask...");
 maskCanny = createEdgeMask(imageRGB);
 
+cannyEdgeMask = maskCanny;
+
 % Processing to remove regions that deviate too much from the average color
 cc = bwconncomp(maskCanny);
-threshold = 0.4;  % Variance threshold (adjust as needed)
+threshold = 0.3;  % Variance threshold (adjust as needed)
 numPixels = numel(maskCanny);  % Number of pixels per channel
 
 for i = 1:cc.NumObjects
@@ -38,7 +41,6 @@ for i = 1:cc.NumObjects
     else
         regionMean = mean(imageRGB(regionIdx));
     end
-
     % Calculate the difference from the saved average leaf color
     diff = norm(regionMean - avgLeafColor);
     if diff > threshold
@@ -51,29 +53,32 @@ disp("Canny Mask Created");
 
 %% Segmentation based on the predicted model (KNN)
 disp("Generating KNN Mask...");
-maskedLeaf = predictMask(imageRGBKNN, modelLocalizer);
-maskedLeaf = imresize(maskedLeaf, [size(original, 1) size(original, 2)], "bilinear", "Antialiasing", true);
+predictedLeafMask = predictMask(imageRGBLoc, modelLocalizer);
+predictedLeafMask = imresize(predictedLeafMask, [size(original, 1) size(original, 2)], "bilinear", "Antialiasing", true);
 disp("KNN resized");
 
 % Morphological operations to improve the KNN mask
-maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
-maskedLeaf = imclose(maskedLeaf, strel('disk', 5));
-maskedLeaf = imfill(maskedLeaf, 'holes');
-maskedLeaf = imerode(maskedLeaf, strel('disk', 5));
+predictedLeafMask = imopen(predictedLeafMask, strel('disk', 5));
+predictedLeafMask = imclose(predictedLeafMask, strel('disk', 5));
+predictedLeafMask = imfill(predictedLeafMask, 'holes');
+predictedLeafMask = imerode(predictedLeafMask, strel('disk', 5));
 
 % Resize the Canny mask to the original dimensions
 maskCanny_resized = imresize(maskCanny, [size(original, 1), size(original, 2)], "bilinear", "Antialiasing", true);
 disp("Canny resized");
 
-imshow(maskCanny_resized);
+cannyEdgeMask= imresize(cannyEdgeMask, [size(original, 1), size(original, 2)], "bilinear", "Antialiasing", true);
 
 % Combine both masks to obtain the final mask and remove imperfections
-finalMask = maskCanny_resized & maskedLeaf;
+oggetti = cannyEdgeMask - maskCanny_resized;
+finalMask = (maskCanny_resized & predictedLeafMask);
 disp("Creating Final Mask...");
 
 
 disp('Extracting leaf regions...');
-boxs = extract_leaf_region_return_box(original, finalMask, singleLeavesMaskPath, singleLeavesSegmentedPath);
+leafBoundingBoxes = extract_leaf_region_return_box(original, finalMask, singleLeavesMaskPath, singleLeavesSegmentedPath);
+
+unknownBonduingBoxes = extract_leaf_region_return_box(original, oggetti, "oggettimask", "oggettisegm");
 
 disp('Extracting features...');
 [testFeatures, ~, featuresNames] = featuresExtractor(...
@@ -97,7 +102,7 @@ disp('Predicting leaf classes...');
 disp('Displaying results...');
 figure; imshow(original);
 hold on;
-for k = 1:size(boxs, 1)
+for k = 1:size(leafBoundingBoxes, 1)
     % Get score value
     scoreValue = max(score(k, :));
 
@@ -114,7 +119,14 @@ for k = 1:size(boxs, 1)
     end
 
     % Draw bounding box and display text on the image
-    rectangle('Position', boxs(k, :), 'EdgeColor', edgeColor, 'LineWidth', 2);
-    text(boxs(k, 1), boxs(k, 2)-40, label, 'Color', edgeColor, 'FontSize', 20, 'FontWeight', 'bold');
+    rectangle('Position', leafBoundingBoxes(k, :), 'EdgeColor', edgeColor, 'LineWidth', 2);
+    text(leafBoundingBoxes(k, 1), leafBoundingBoxes(k, 2)-40, label, 'Color', edgeColor, 'FontSize', 20, 'FontWeight', 'bold');
+end
+
+for k = 1:size(unknownBonduingBoxes, 1)
+
+    % Draw bounding box and display text on the image
+    rectangle('Position', unknownBonduingBoxes(k, :), 'EdgeColor', "m", 'LineWidth', 2);
+    text(unknownBonduingBoxes(k, 1), unknownBonduingBoxes(k, 2)-40, "Unknown", 'Color', "m", 'FontSize', 20, 'FontWeight', 'bold');
 end
 hold off;

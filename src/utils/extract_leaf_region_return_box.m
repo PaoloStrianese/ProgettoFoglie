@@ -52,7 +52,7 @@ for k = 1:numel(stats)
     resizedBinary = imresize(leafBinary, origSize);
 
     % Mask the original image with the resized binary mask
-    maskedOriginal = leafOriginal .* uint8(resizedBinary);
+    maskedOriginal = leafOriginal .* resizedBinary;
 
     baseName = sprintf('%02d.png', k);
     % Save the masked image

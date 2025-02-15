@@ -35,7 +35,8 @@ for idx = 1:imageCount
     disp("Processing image " + string(idx) + " of " + string(imageCount));
 
     imagePath = fullfile(composizioniFolder, allImageNames{idx});
-    outName = strcat(string(idx), ".png");
+    [~, name, ~] = fileparts(allImageNames{idx});
+    outName = strcat(name, ".png");
 
     imageRGB = im2double(correctOrientation(imagePath));
     original = imageRGB;
@@ -67,7 +68,9 @@ for idx = 1:imageCount
 
         % Calcola la differenza dalla media delle foglie salvata
         diff = norm(regionMean - avgLeafColor);
+
         if diff > threshold
+
             % Se la differenza supera la soglia, azzera l'intera regione
             maskCanny(regionIdx) = 0;
         end
@@ -79,22 +82,22 @@ for idx = 1:imageCount
 
     %% Segmentazione basata sul modello predetto (KNN)
     disp("Generating KNN Mask...");
-    maskedLeaf = predictMask(imageRGBKNN, modelLocalizer);
-    maskedLeaf = imresize(maskedLeaf, [size(original,1) size(original,2)], "bilinear", "Antialiasing", true);
+    predictedMaskedLeaf = predictMask(imageRGBKNN, modelLocalizer);
+    predictedMaskedLeaf = imresize(predictedMaskedLeaf, [size(original,1) size(original,2)], "bilinear", "Antialiasing", true);
     disp("KNN resized");
 
     % Operazioni morfologiche per migliorare la maschera KNN
-    maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
-    maskedLeaf = imclose(maskedLeaf, strel('disk', 5));
-    maskedLeaf = imfill(maskedLeaf, 'holes');
-    maskedLeaf = imerode(maskedLeaf, strel('disk', 5));
+    predictedMaskedLeaf = imopen(predictedMaskedLeaf, strel('disk', 5));
+    predictedMaskedLeaf = imclose(predictedMaskedLeaf, strel('disk', 5));
+    predictedMaskedLeaf = imfill(predictedMaskedLeaf, 'holes');
+    predictedMaskedLeaf = imerode(predictedMaskedLeaf, strel('disk', 5));
 
     % Ridimensiona la maschera Canny alla dimensione originale
-    maskCanny_resized = imresize(maskCanny, [size(original,1), size(original,2)], "bilinear", "Antialiasing", true);
+    maskCanny = imresize(maskCanny, [size(original,1), size(original,2)], "bilinear", "Antialiasing", true);
     disp("Canny resized");
 
     % Combina le due maschere per ottenere la maschera finale e rimuovere le imperfezioni
-    finalMask = maskCanny_resized & maskedLeaf;
+    finalMask = maskCanny & predictedMaskedLeaf;
     disp("Creating Final Mask...");
 
 
@@ -105,7 +108,7 @@ for idx = 1:imageCount
     % outputFolderSegmentedLeavesC = fullfile(outFolder, 'segmented_leaves_canny');
     % saveImage(segmentedLeaf, outputFolderSegmentedLeaves, outName);
     % saveImage(segmentedLeafCanny, outputFolderSegmentedLeavesC, outName);
-    saveImage(maskedLeaf, outputFolderMaskedLeaves, outName);
+    saveImage(finalMask, outputFolderMaskedLeaves, outName);
 end
 close(segmentationProgressBar)
 
