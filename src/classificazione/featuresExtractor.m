@@ -37,7 +37,9 @@ for i = 1:imagesCount
 
     % Extract segmented features
     segmentedImage = im2double(imread(segmentedPaths{i}));
+    segmentedImage = processImage(segmentedImage);
     segmentedImage = imresize(segmentedImage, segmentedResizeFactor);
+
 
     for j = 1:numel(segmentedFunctions)
         segmentedFeatures{j}(i, :) = segmentedFunctions{j}(segmentedImage);
@@ -45,6 +47,7 @@ for i = 1:imagesCount
 
     % Extract mask features
     maskImage = im2double(imread(maskPaths{i}));
+    maskImage = processImage(maskImage);
     maskImage = imresize(maskImage, maskResizeFactor);
 
     for j = 1:numel(maskFunctions)
@@ -76,4 +79,30 @@ for idx = 1:numel(files)
     %nameExt = split(parts(2), ".");
     labels(idx) = string(parts(1));
 end
+end
+
+
+function [outImage] = processImage(img)
+targetSize = [512, 512];
+
+    [origH, origW, ~] = size(img);
+
+% Calcola il fattore di scala preservando il rapporto
+scaleFactor = min(targetSize(1)/origH, targetSize(2)/origW);
+newSize = round([origH, origW] * scaleFactor);
+
+% Ridimensiona con metodo nearest (mantenendo binarietà)
+imgResized = imresize(img, newSize, 'Method', 'nearest');
+
+% Calcolo padding (per centrare l'immagine)
+padRows = targetSize(1) - newSize(1);
+padCols = targetSize(2) - newSize(2);
+top    = floor(padRows/2);
+bottom = padRows - top;
+left   = floor(padCols/2);
+right  = padCols - left;
+
+% Aggiungi padding nero (valore 0)
+imgPadded = padarray(imgResized, [top, left], 0, 'pre');
+outImage = padarray(imgPadded, [bottom, right], 0, 'post');
 end
