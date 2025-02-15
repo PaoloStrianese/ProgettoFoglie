@@ -27,7 +27,8 @@ for idx = 1:imageCount
     original = imageRGB;
     
     % Ridimensiona per il processing (opzionale)
-    imageRGB = imresize(imageRGB, 0.5, "bilinear", "Antialiasing", true);
+    imageRGB = imresize(imageRGB, 0.6, "bilinear", "Antialiasing", true);
+    imageRGBKNN = imresize(imageRGB, 0.1, "bilinear", "Antialiasing", true);
     
     %% Maschera ottenuta con Canny
     disp("Generating Canny Mask...");
@@ -35,7 +36,7 @@ for idx = 1:imageCount
     
     % Elaborazione per rimuovere le regioni che si discostano troppo dal colore medio
     cc = bwconncomp(maskCanny);
-    threshold = 0.5;  % Soglia di varianza (modifica questo valore secondo necessità)
+    threshold = 0.4;  % Soglia di varianza (modifica questo valore secondo necessità)
     numPixels = numel(maskCanny);  % Numero di pixel per un singolo canale
     
     for i = 1:cc.NumObjects
@@ -64,7 +65,7 @@ for idx = 1:imageCount
     
     %% Segmentazione basata sul modello predetto (KNN)
     disp("Generating KNN Mask...");
-    maskedLeaf = predictMask(imageRGB, localizerModel);
+    maskedLeaf = predictMask(imageRGBKNN, localizerModel);
     maskedLeaf = imresize(maskedLeaf, [size(original,1) size(original,2)], "bilinear", "Antialiasing", true);
     disp("KNN resized");
     
