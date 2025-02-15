@@ -1,4 +1,5 @@
 function imgCorrected = correctOrientation(imagePath)
+warning('off');
 info = imfinfo(imagePath);
 imgCorrected = imread(imagePath);
 if isfield(info, 'Orientation')

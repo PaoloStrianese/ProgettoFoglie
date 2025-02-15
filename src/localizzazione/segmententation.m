@@ -2,43 +2,57 @@ close all;
 clear all;
 clc;
 
-% Carica il modello esistente e la media dei colori delle foglie
-load(fullfile('out','localizerModelMosaic.mat'), 'localizerModel', 'avgLeafColor');
+addpath(genpath(fullfile('..', 'utils')));
+outFolder = "out";
+cacheFolder = fullfile(outFolder, 'cache');
+outputFolderMaskedLeaves     = fullfile(outFolder, 'maschere composizioni predette');
+groundTruthFolderMaskedCompositions = fullfile('..','dataset','gt_compositions');
+datasetFolder = fullfile('..','dataset','single_leaves');
+groundTruthFolder = fullfile('..','dataset','gt_single_leaves');
+
+
+if ~exist(outFolder, 'dir')
+    mkdir(outFolder);
+end
+
+disp('Training with mosaic images.');
+trainLocalizerMosaic(outFolder, datasetFolder, groundTruthFolder);
+
+% Load the existing model and the average color of the leaves
+load(fullfile(outFolder,'modelLocalizer.mat'), 'modelLocalizer', 'avgLeafColor');
 disp('Loaded existing localizer.');
 
-outputFolderSegmentedLeaves  = fullfile('out', 'segmented_leaves');
-outputFolderSegmentedLeavesC = fullfile('out', 'segmented_leavesC');
-outputFolderMaskedLeaves     = fullfile('maschere composizioni predette');
-
-composizioniFolder = fullfile('dataset','composizioni');
+composizioniFolder = fullfile('..','dataset','compositions');
 imgFiles = dir(fullfile(composizioniFolder, '*.jpg'));
 allImageNames = {imgFiles.name};
 imageCount = numel(allImageNames);
 
-segmentationProgressBar = waitbar(0, 'Starting segmentation...');
+segmentationProgressBar = waitbar(0, 'Starting segmentation...', 'Name', 'Segmentation Progress');
 for idx = 1:imageCount
     waitbar(idx/imageCount, segmentationProgressBar, ...
         sprintf('Progress: %d %%', floor(idx/imageCount*100)));
+
+    disp("Processing image " + string(idx) + " of " + string(imageCount));
 
     imagePath = fullfile(composizioniFolder, allImageNames{idx});
     outName = strcat(string(idx), ".png");
 
     imageRGB = im2double(correctOrientation(imagePath));
     original = imageRGB;
-    
+
     % Ridimensiona per il processing (opzionale)
     imageRGB = imresize(imageRGB, 0.6, "bilinear", "Antialiasing", true);
     imageRGBKNN = imresize(imageRGB, 0.1, "bilinear", "Antialiasing", true);
-    
+
     %% Maschera ottenuta con Canny
     disp("Generating Canny Mask...");
-    maskCanny = createEdgeMask(imageRGB, outName);
-    
+    maskCanny = createEdgeMask(imageRGB);
+
     % Elaborazione per rimuovere le regioni che si discostano troppo dal colore medio
     cc = bwconncomp(maskCanny);
     threshold = 0.4;  % Soglia di varianza (modifica questo valore secondo necessità)
     numPixels = numel(maskCanny);  % Numero di pixel per un singolo canale
-    
+
     for i = 1:cc.NumObjects
         regionIdx = cc.PixelIdxList{i};
         % Calcola il valore medio per ogni canale
@@ -50,7 +64,7 @@ for idx = 1:imageCount
         else
             regionMean = mean(imageRGB(regionIdx));
         end
-        
+
         % Calcola la differenza dalla media delle foglie salvata
         diff = norm(regionMean - avgLeafColor);
         if diff > threshold
@@ -58,37 +72,41 @@ for idx = 1:imageCount
             maskCanny(regionIdx) = 0;
         end
     end
-    
+
     % Applica la maschera Canny modificata all'immagine
     segmentedLeafCanny = imageRGB .* maskCanny;
     disp("Canny Mask Created");
-    
+
     %% Segmentazione basata sul modello predetto (KNN)
     disp("Generating KNN Mask...");
-    maskedLeaf = predictMask(imageRGBKNN, localizerModel);
+    maskedLeaf = predictMask(imageRGBKNN, modelLocalizer);
     maskedLeaf = imresize(maskedLeaf, [size(original,1) size(original,2)], "bilinear", "Antialiasing", true);
     disp("KNN resized");
-    
+
     % Operazioni morfologiche per migliorare la maschera KNN
     maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
     maskedLeaf = imclose(maskedLeaf, strel('disk', 5));
     maskedLeaf = imfill(maskedLeaf, 'holes');
-    maskedLeaf = imerode(maskedLeaf, strel('disk', 3));
-    
+    maskedLeaf = imerode(maskedLeaf, strel('disk', 5));
+
     % Ridimensiona la maschera Canny alla dimensione originale
     maskCanny_resized = imresize(maskCanny, [size(original,1), size(original,2)], "bilinear", "Antialiasing", true);
     disp("Canny resized");
-    
+
     % Combina le due maschere per ottenere la maschera finale e rimuovere le imperfezioni
     finalMask = maskCanny_resized & maskedLeaf;
     disp("Creating Final Mask...");
-    
-    % Applica la maschera finale all'immagine originale
+
+
     segmentedLeaf = original .* finalMask;
-    
+
     % Salva le immagini risultanti
+    outputFolderSegmentedLeaves = fullfile(outFolder, 'segmented_leaves');
+    outputFolderSegmentedLeavesC = fullfile(outFolder, 'segmented_leaves_canny');
     saveImage(segmentedLeaf, outputFolderSegmentedLeaves, outName);
     saveImage(segmentedLeafCanny, outputFolderSegmentedLeavesC, outName);
     saveImage(maskedLeaf, outputFolderMaskedLeaves, outName);
 end
 close(segmentationProgressBar)
+
+localizerAccuracy(outputFolderMaskedLeaves, groundTruthFolderMaskedCompositions);

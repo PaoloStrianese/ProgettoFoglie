@@ -2,7 +2,7 @@ function trainLocalizerMosaic(outFolder, datasetFolder, groundTruthFolder)
 
 mosaicLeafName = 'mosaic_leaf.png';
 mosaicBGName = 'mosaic_background.png';
-modelFileName = fullfile(outFolder, 'localizerModelMosaic.mat');
+modelFileName = fullfile(outFolder, 'modelLocalizer.mat');
 
 if ~exist(fullfile(outFolder, mosaicLeafName), 'file') && ~exist(fullfile(outFolder, mosaicBGName), 'file')
     disp('Mosaic images not found. Generating new ones.');
@@ -28,22 +28,22 @@ end
 
 disp('Extracting features for training...');
 
-leaf_values = extractFeaturesLocalizer(mosaicLeaf);
-bg_values = extractFeaturesLocalizer(mosaicBG);
+leafValues = extractFeaturesLocalizer(mosaicLeaf);
+bgValues = extractFeaturesLocalizer(mosaicBG);
 
-train_values = [leaf_values; bg_values];
+train_values = [leafValues; bgValues];
 
 % Normalizza i valori per il training nell'intervallo [0, 1]
 train_values = normalize(train_values, 'range');
 
 % Creiamo le etichette per il training: 1 = foglia
 train_labels = ones(size(train_values, 1), 1);
-nrs = size(leaf_values, 1);
+nrs = size(leafValues, 1);
 train_labels(nrs + 1:end) = 0;
 
 disp('Starting training...');
 % Addestra il modello e salvalo insieme al valore medio del colore
-localizerModel = TreeBagger(500, train_values, train_labels, 'Method', 'classification', 'NumPrint', 50);
-save(modelFileName, 'localizerModel', 'avgLeafColor', '-v7.3');
+modelLocalizer = TreeBagger(1200, train_values, train_labels, 'Method', 'classification', 'NumPrint', 100);
+save(modelFileName, 'modelLocalizer', 'avgLeafColor', '-v7.3');
 disp('Trained and saved new localizer model.');
 end

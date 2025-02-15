@@ -1,6 +1,6 @@
 
-tempo estrazione features training: ~50 sec
-tempo estrazione features testing: ~80 sec
+tempo estrazione features training: ~45-50 sec
+tempo estrazione features testing: ~70-80 sec
 tempo training modello: ~15 sec
 
 ## estrazione su foglie segmentate

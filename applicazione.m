@@ -4,53 +4,94 @@ clear all;
 load(fullfile('pretrained model','modelClassifier.mat'), 'model');
 load(fullfile('pretrained model','modelLocalizer.mat'), 'localizerModel');
 
-
-composizione = fullfile('localizzazione','dataset','composizioni','11.jpg');
+composizione = fullfile('src','dataset','composizioni','11.jpg');
 
 singleLeavesMaskPath = fullfile('.cache','main_segmented');
 singleLeavesSegmentedPath = fullfile('.cache','main_mask');
 
-addpath('utils','classificazione');
-addpath(genpath(fullfile('classificazione','feature_extractors')));
-addpath(genpath(fullfile('localizzazione')));
+addpath(genpath(fullfile('src','classificazione')));
+addpath(genpath(fullfile('src','localizzazione')));
 
+imageRGB = correctOrientation(composizione);
+original = imageRGB;
 
-img = correctOrientation(composizione);
+% Resize for processing (optional)
+imageRGB = imresize(imageRGB, 0.6, "bilinear", "Antialiasing", true);
+imageRGBKNN = imresize(imageRGB, 0.1, "bilinear", "Antialiasing", true);
 
-original = img;
+%% Mask obtained with Canny
+disp("Generating Canny Mask...");
+maskCanny = createEdgeMask(imageRGB);
 
-img = imresize(img, 0.15, "bilinear", "Antialiasing", true);
+% Processing to remove regions that deviate too much from the average color
+cc = bwconncomp(maskCanny);
+threshold = 0.4;  % Variance threshold (adjust as needed)
+numPixels = numel(maskCanny);  % Number of pixels per channel
 
-disp('Predicting mask...');
-mask = predictMask(img, localizerModel, 1);
+for i = 1:cc.NumObjects
+    regionIdx = cc.PixelIdxList{i};
+    % Calculate the mean value for each channel
+    if size(imageRGB, 3) == 3
+        meanR = mean(imageRGB(regionIdx));
+        meanG = mean(imageRGB(regionIdx + numPixels));
+        meanB = mean(imageRGB(regionIdx + 2*numPixels));
+        regionMean = [meanR, meanG, meanB];
+    else
+        regionMean = mean(imageRGB(regionIdx));
+    end
 
-% questa parte bisogna metterla in un'altra funzione (anche nel localizzatore)
-mask = imresize(mask, [size(original,1) size(original,2)], "bilinear","Antialiasing",true);
+    % Calculate the difference from the saved average leaf color
+    diff = norm(regionMean - avgLeafColor);
+    if diff > threshold
+        % If the difference exceeds the threshold, zero out the entire region
+        maskCanny(regionIdx) = 0;
+    end
+end
 
-mask = imopen(mask, strel('disk', 5));
-mask = imclose(mask, strel('disk', 5));
-mask = imfill(mask, 'holes');
-mask = imerode(mask, strel('disk', 3));
+% Apply the modified Canny mask to the image
+segmentedLeafCanny = imageRGB .* maskCanny;
+disp("Canny Mask Created");
+
+%% Segmentation based on the predicted model (KNN)
+disp("Generating KNN Mask...");
+maskedLeaf = predictMask(imageRGBKNN, modelLocalizer);
+maskedLeaf = imresize(maskedLeaf, [size(original, 1) size(original, 2)], "bilinear", "Antialiasing", true);
+disp("KNN resized");
+
+% Morphological operations to improve the KNN mask
+maskedLeaf = imopen(maskedLeaf, strel('disk', 5));
+maskedLeaf = imclose(maskedLeaf, strel('disk', 5));
+maskedLeaf = imfill(maskedLeaf, 'holes');
+maskedLeaf = imerode(maskedLeaf, strel('disk', 5));
+
+% Resize the Canny mask to the original dimensions
+maskCanny_resized = imresize(maskCanny, [size(original, 1), size(original, 2)], "bilinear", "Antialiasing", true);
+disp("Canny resized");
+
+% Combine both masks to obtain the final mask and remove imperfections
+finalMask = maskCanny_resized & maskedLeaf;
+disp("Creating Final Mask...");
+
+segmentedLeaf = original .* finalMask;
 
 disp('Extracting leaf regions...');
 boxs = extract_leaf_region_return_box(original, mask, singleLeavesMaskPath, singleLeavesSegmentedPath);
 
 disp('Extracting features...');
 [testFeatures, ~, featuresNames] = featureExtractorClassifier(...
-    singleLeavesSegmentedPath,...
-    singleLeavesMaskPath,...
-    0.8,0.8);
+    singleLeavesSegmentedPath, ...
+    singleLeavesMaskPath);
 
-test  = cell2struct(testFeatures,  cellstr(featuresNames), 2);
+test = cell2struct(testFeatures, cellstr(featuresNames), 2);
 
 numFeatures = numel(featuresNames);
 
-testFeatures  = cell(1, numFeatures);
+testFeatures = cell(1, numFeatures);
 for i = 1:numFeatures
-    testFeatures{i}  = test.(featuresNames{i});
+    testFeatures{i} = test.(featuresNames{i});
 end
 
-testFeatures  = [testFeatures{:}];
+testFeatures = [testFeatures{:}];
 
 disp('Predicting leaf classes...');
 [prediction, score] = predict(model, testFeatures);
@@ -58,9 +99,9 @@ disp('Predicting leaf classes...');
 disp('Displaying results...');
 figure; imshow(original);
 hold on;
-for k = 1:size(boxs,1)
+for k = 1:size(boxs, 1)
     % Get score value
-    scoreValue = max(score(k,:));
+    scoreValue = max(score(k, :));
 
     % Determine the color and label
     if scoreValue < 0.15
@@ -74,8 +115,8 @@ for k = 1:size(boxs,1)
         label = prediction{k};
     end
 
-    % Draw bounding box and display text on image
-    rectangle('Position', boxs(k,:), 'EdgeColor', edgeColor, 'LineWidth', 2);
-    text(boxs(k,1), boxs(k,2)-40, label, 'Color', edgeColor, 'FontSize', 20, 'FontWeight', 'bold');
+    % Draw bounding box and display text on the image
+    rectangle('Position', boxs(k, :), 'EdgeColor', edgeColor, 'LineWidth', 2);
+    text(boxs(k, 1), boxs(k, 2)-40, label, 'Color', edgeColor, 'FontSize', 20, 'FontWeight', 'bold');
 end
 hold off;
