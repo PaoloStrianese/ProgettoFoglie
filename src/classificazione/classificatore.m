@@ -73,7 +73,7 @@ fprintf('Test Acc: %f\n', cmTest.accuracy);
 
 
 
-% !TODO
+
 threshold = 0.30;
 correctHighScore = 0;
 totalHighScore = 0;

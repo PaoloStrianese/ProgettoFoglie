@@ -41,6 +41,11 @@ train_labels = ones(size(train_values, 1), 1);
 nrs = size(leafValues, 1);
 train_labels(nrs + 1:end) = 0;
 
+
+if ~exist(outFolder, 'dir')
+    mkdir(outFolder);
+end
+
 disp('Starting training...');
 % Addestra il modello e salvalo insieme al valore medio del colore
 modelLocalizer = TreeBagger(1200, train_values, train_labels, 'Method', 'classification', 'NumPrint', 100);
