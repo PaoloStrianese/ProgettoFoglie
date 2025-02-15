@@ -18,7 +18,7 @@ imageCount = numel(allImageNames);
 segmentationProgressBar = waitbar(0, 'Starting segmentation...');
 for idx=1:imageCount
     waitbar(idx/imageCount, segmentationProgressBar, ...
-        sprintf('Progress: %d %%\n Current folder: %s', ...
+        sprintf('Progress: %d %%', ...
         floor(idx/imageCount*100)));
 
     imagePath = fullfile(composizioniFolder, allImageNames{idx});
@@ -28,7 +28,7 @@ for idx=1:imageCount
 
     imageRGB = imresize(imageRGB, 0.15, "bilinear", "Antialiasing", true);
 
-    maskedLeaf = predictMask(imageRGB, localizerModel, idx);
+    maskedLeaf = predictMask(imageRGB, localizerModel);
 
 
     maskedLeaf = imresize(maskedLeaf, [size(original,1) size(original,2)], "bilinear","Antialiasing",true);
