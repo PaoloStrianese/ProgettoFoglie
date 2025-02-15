@@ -4,7 +4,9 @@ clear all;
 load(fullfile('pretrained model','modelClassifier.mat'), 'model');
 load(fullfile('pretrained model','modelLocalizer.mat'), 'localizerModel');
 
-composizione = 'composizione.jpg';
+
+composizione = fullfile('localizzazione','dataset','composizioni','11.jpg');
+
 singleLeavesMaskPath = fullfile('.cache','main_segmented');
 singleLeavesSegmentedPath = fullfile('.cache','main_mask');
 
@@ -22,6 +24,7 @@ img = imresize(img, 0.15, "bilinear", "Antialiasing", true);
 disp('Predicting mask...');
 mask = predictMask(img, localizerModel, 1);
 
+% questa parte bisogna metterla in un'altra funzione (anche nel localizzatore)
 mask = imresize(mask, [size(original,1) size(original,2)], "bilinear","Antialiasing",true);
 
 mask = imopen(mask, strel('disk', 5));
