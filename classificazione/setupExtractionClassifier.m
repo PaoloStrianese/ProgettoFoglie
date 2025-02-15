@@ -25,76 +25,90 @@ addpath(genpath(featuresExtractorFolder));
 % edge + ContourFourier + Area = 72.5%
 % edge + ContourFourier + TamuraTexture= 72% ma 91%
 
+
+% edge + ContourFourier + Eccentricy = 73 e 83
+% hu + ContourFourier  = 60 e 60
+% edge + ContourFourier + hu = 65 e 85
+% edge + ContourFourier + hu + color = 71 e 82
+% edge + ContourFourier + hu + exG = schifo
+
+
+% edge + ContourFourier + Eccentricy + color = 74 e 85
+% edge + ContourFourier + Eccentricy + + color + extractExG = 73 e 83
+% edge + ContourFourier + Eccentricy + color + aspectradio = 75 e 84,4
+% edge + ContourFourier + Eccentricy + color + extractExG = 74 e 88,4
+
 % Segmented feature extractors
 segmentedFunctions = { ...
-    % @extractColor,... 
-    % @extractExGR,... 
+    @extractColor,... %0.45
+    @extractExG,... 0.37
+    % DA TOGLIERE @extractExGR,... 0.35
     % DA TOGLIERE @extractCanny,... 0.3
-    % @extractExG,... 
     % DA TOGLIERE @extractHaralick,... 0.3
     % DA TOGLIERE @extractCIVE,... 0.3
     % DA TOGLIERE @extractWavelet,... 0.1
     % DA TOGLIERE @extractHOG,... 0.25
     % DA TOGLIERE @extractVenation,... 0.16
     % DA TOGLIERE @extractGabor,... 0.20
-    %@extractTamuraTexture,... 
-    % @extractColorCorrelogram,... 
-    % @extractLBP, ...
+    % DA TOGLIERE @extractTamuraTexture,... 0.18
+    % DA TOGLIERE @extractColorCorrelogram,... 0.09
+    %@extractLBP, ... 0.35
     % DA TOGLIERE @extractGLCM, ... 0.22
     % DA TOGLIERE @extractLacunarity,... 0.26
-    @extractSkeletonMetrics, ...
-    % @extractLawsEnergy,...
+    % DA TOGLIERE @extractSkeletonMetrics, ... 0.09
+    % DA TOGLIERE @extractLawsEnergy,... 0.09
 
     };
 
 % Mask feature extractors
 maskFunctions = { ...
-    %@extractEdge,... 
-    %@extractContourFourier,... % 0.70
-    %@extractArea,...
-    %@extractShapeRatios,...
-    %@extractEccentricity,...
-    %@extractHuMoments,...
-    %@extractPhysiologicalLength,...
-    %@extractPhysiologicalWidth,...
-    %@extractAspectRatio,....
-    % @extractCentroidCoordinates,...
-    % @extractNarrowFactor,... 
-    % @extractFractalDimension,... 
+    @extractEdge,... %0.55
+    @extractContourFourier,... %0.60
+    @extractEccentricity,... %0.42
+    %@extractAspectRatio,.... %0.39
+    %@extractHuMoments,... 0.33
+    % DA TOGLIERE @extractArea,... 0.18
+    % DA TOGLIERE @extractShapeRatios,... %0.38
+    % DA TOGLIERE @extractPhysiologicalLength,... 0.10
+    % DA TOGLIERE @extractPhysiologicalWidth,... 0.30
+    % DA TOGLIERE @extractCentroidCoordinates,... 0.10
+    % DA TOGLIERE @extractNarrowFactor,... 0.10
+    % DA TOGLIERE @extractFractalDimension,... 0.10
     };
 
 %% Define feature sizes for preallocation
 segmentedFeaturesSizes = configureDictionary("string","uint8");
 %segmentedFeaturesSizes("Canny") = 16;
-%segmentedFeaturesSizes("Color") = 33;
-%segmentedFeaturesSizes("ExG") = 8;
-%segmentedFeaturesSizes("ExGR") = 8;
+segmentedFeaturesSizes("Color") = 33;
+segmentedFeaturesSizes("ExG") = 8;
+% segmentedFeaturesSizes("ExGR") = 8;
 % segmentedFeaturesSizes("CIVE") = 8;
 % segmentedFeaturesSizes("Haralick") = 4;
 
 % segmentedFeaturesSizes("HOG") = 36;
-%segmentedFeaturesSizes("TamuraTexture") = 3;
+% segmentedFeaturesSizes("TamuraTexture") = 3;
 % segmentedFeaturesSizes("ColorCorrelogram") = 6;
 % segmentedFeaturesSizes("Wavelet") = 19;
 %segmentedFeaturesSizes("LawsEnergy") = 1;
-segmentedFeaturesSizes("SkeletonMetrics") = 3;
+%segmentedFeaturesSizes("SkeletonMetrics") = 3;
 %segmentedFeaturesSizes("Venation") = 2;
-% segmentedFeaturesSizes("LBP") = 59;
+%segmentedFeaturesSizes("LBP") = 59;
 %segmentedFeaturesSizes("GLCM") = 64;
 % segmentedFeaturesSizes("Lacunarity") = 3;
 %segmentedFeaturesSizes("Gabor") = 2;
 
 maskFeaturesSizes = configureDictionary("string","uint8");
 %maskFeaturesSizes("ShapeRatios") = 4;
-%maskFeaturesSizes("HuMoments") = 7;
-%maskFeaturesSizes('Edge') = 16;
-%maskFeaturesSizes('ContourFourier') = 10;
-%maskFeaturesSizes('Eccentricity') = 1;
-%maskFeaturesSizes('AspectRatio') = 1;
 
+%maskFeaturesSizes("HuMoments") = 7;
+maskFeaturesSizes('Edge') = 16;
+maskFeaturesSizes('ContourFourier') = 10;
+maskFeaturesSizes('Eccentricity') = 1;
+
+maskFeaturesSizes('AspectRatio') = 1;
 %maskFeaturesSizes('PhysiologicalLength') = 1;
 %maskFeaturesSizes('PhysiologicalWidth') = 1;
-% maskFeaturesSizes('FractalDimension') = 1;
+%maskFeaturesSizes('FractalDimension') = 1;
 %maskFeaturesSizes('Area') = 1;
 % maskFeaturesSizes('NarrowFactor') = 1;
 % maskFeaturesSizes('CentroidCoordinates') = 2;

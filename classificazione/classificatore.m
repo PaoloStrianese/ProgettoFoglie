@@ -61,7 +61,7 @@ testFeatures  = [testFeatures{:}];
 
 
 
-model = TreeBagger(1200, trainFeatures, train.labels, 'OOBPrediction', 'on', 'OOBPredictorImportance', 'on','MinLeafSize', 1,'NumPrint',200);
+model = TreeBagger(600, trainFeatures, train.labels, 'OOBPrediction', 'on', 'OOBPredictorImportance', 'on','MinLeafSize', 1,'NumPrint',200);
 save(fullfile(outFolder,modelName), "model");
 
 
