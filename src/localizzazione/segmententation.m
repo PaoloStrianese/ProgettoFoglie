@@ -101,10 +101,10 @@ for idx = 1:imageCount
     segmentedLeaf = original .* finalMask;
 
     % Salva le immagini risultanti
-    outputFolderSegmentedLeaves = fullfile(outFolder, 'segmented_leaves');
-    outputFolderSegmentedLeavesC = fullfile(outFolder, 'segmented_leaves_canny');
-    saveImage(segmentedLeaf, outputFolderSegmentedLeaves, outName);
-    saveImage(segmentedLeafCanny, outputFolderSegmentedLeavesC, outName);
+    % outputFolderSegmentedLeaves = fullfile(outFolder, 'segmented_leaves');
+    % outputFolderSegmentedLeavesC = fullfile(outFolder, 'segmented_leaves_canny');
+    % saveImage(segmentedLeaf, outputFolderSegmentedLeaves, outName);
+    % saveImage(segmentedLeafCanny, outputFolderSegmentedLeavesC, outName);
     saveImage(maskedLeaf, outputFolderMaskedLeaves, outName);
 end
 close(segmentationProgressBar)

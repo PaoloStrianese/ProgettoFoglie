@@ -1,16 +1,15 @@
 close all;
 clear all;
 
-load(fullfile('pretrained model','modelClassifier.mat'), 'model');
-load(fullfile('pretrained model','modelLocalizer.mat'), 'localizerModel');
+load(fullfile('src','pretrained model','modelClassifier.mat'));
+load(fullfile('src','pretrained model','modelLocalizer.mat'));
 
-composizione = fullfile('src','dataset','composizioni','11.jpg');
+composizione = fullfile('src','dataset','compositions','11.jpg');
 
 singleLeavesMaskPath = fullfile('.cache','main_segmented');
 singleLeavesSegmentedPath = fullfile('.cache','main_mask');
 
-addpath(genpath(fullfile('src','classificazione')));
-addpath(genpath(fullfile('src','localizzazione')));
+addpath(genpath(fullfile('src')));
 
 imageRGB = correctOrientation(composizione);
 original = imageRGB;
@@ -48,8 +47,6 @@ for i = 1:cc.NumObjects
     end
 end
 
-% Apply the modified Canny mask to the image
-segmentedLeafCanny = imageRGB .* maskCanny;
 disp("Canny Mask Created");
 
 %% Segmentation based on the predicted model (KNN)
@@ -68,17 +65,18 @@ maskedLeaf = imerode(maskedLeaf, strel('disk', 5));
 maskCanny_resized = imresize(maskCanny, [size(original, 1), size(original, 2)], "bilinear", "Antialiasing", true);
 disp("Canny resized");
 
+imshow(maskCanny_resized);
+
 % Combine both masks to obtain the final mask and remove imperfections
 finalMask = maskCanny_resized & maskedLeaf;
 disp("Creating Final Mask...");
 
-segmentedLeaf = original .* finalMask;
 
 disp('Extracting leaf regions...');
-boxs = extract_leaf_region_return_box(original, mask, singleLeavesMaskPath, singleLeavesSegmentedPath);
+boxs = extract_leaf_region_return_box(original, finalMask, singleLeavesMaskPath, singleLeavesSegmentedPath);
 
 disp('Extracting features...');
-[testFeatures, ~, featuresNames] = featureExtractorClassifier(...
+[testFeatures, ~, featuresNames] = featuresExtractor(...
     singleLeavesSegmentedPath, ...
     singleLeavesMaskPath);
 
@@ -94,7 +92,7 @@ end
 testFeatures = [testFeatures{:}];
 
 disp('Predicting leaf classes...');
-[prediction, score] = predict(model, testFeatures);
+[prediction, score] = predict(classificationModel, testFeatures);
 
 disp('Displaying results...');
 figure; imshow(original);
