@@ -13,7 +13,7 @@ function mask = createEdgeMask(imgrgb, id)
 
     % Migliora l'immagine e salva il risultato
     imgEnhanced = enhancement(imgrgb);
-    saveImage(imgEnhanced, "enhanced", id);
+    %saveImage(imgEnhanced, "enhanced", id);
 
     % Converti in scala di grigi:
     % - 'grayEnhanced' per l'immagine migliorata
@@ -29,7 +29,7 @@ function mask = createEdgeMask(imgrgb, id)
     % Applica il filtro mediano per ridurre il rumore
     grayEnhanced = medfilt2(grayEnhanced, [5, 5]);
     grayOriginal = medfilt2(grayOriginal, [5, 5]);
-    saveImage(grayEnhanced, "gray", id);
+    %saveImage(grayEnhanced, "gray", id);
 
     % Calcola i bordi con i filtri:
     % - Sobel sull'immagine originale
@@ -37,11 +37,11 @@ function mask = createEdgeMask(imgrgb, id)
     edgeSobel = edge(grayOriginal, 'Sobel');
     edgeCannyOriginal = edge(grayOriginal, 'Canny', [0.08, 0.15]);
     edgeCannyEnhanced = edge(grayEnhanced, 'Canny', [0.08, 0.15]);
-    saveImage(edgeCannyOriginal, "canny", id);
+    %saveImage(edgeCannyOriginal, "canny", id);
 
     % Somma le immagini binarie dei bordi (conversione in double per la somma)
     edgeSum = double(edgeSobel) + double(edgeCannyOriginal) + double(edgeCannyEnhanced);
-    saveImage(edgeSum, "mask-pre", id);
+    %saveImage(edgeSum, "mask-pre", id);
 
     % Connette i bordi spezzati e riempie i buchi
     seClose = strel('disk', 15);
