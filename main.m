@@ -1,7 +1,9 @@
 close all;
 clear all;
 clc;
-rmdir('.cache', 's');
+if exist('.cache', 'dir')
+    rmdir('.cache', 's');
+end
 
 %Select the image that you want to analize (from folder /src/dataset/compositions)
 selectedImg = "20.jpg";
